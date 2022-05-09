@@ -1,0 +1,24 @@
+## running Spectronaut ##
+
+& 'C:\Program Files (x86)\Biognosys\Spectronaut\bin\Spectronaut.exe' -d "F:\Data\Prot126\DIA" -a "F:\Data\ProtShtapa\Spectral_library\Prot126_EC_PULSAR_Labelled.tsv" -s "F:\Data\ProtShtapa\pipeline_settings.prop" -o "F:\Data\ProtShtapa\Ec_DIA_simple_exp" -n "Ec_DIA_simple_experiment" -f ".*\.raw"
+
+## running Spectronaut with directDIA ##
+
+& 'C:\Program Files (x86)\Biognosys\Spectronaut\bin\Spectronaut.exe' -direct -d "F:\Data\Prot126\DIA" -fasta "F:\Data\ProtShtapa\Spectral_library\URF2020203UP000000625Ecoli83333.bgsfasta" -s "F:\Data\ProtShtapa\directDIA_settings.prop" -o "F:\Data\ProtShtapa\Ec_DIA_simple_exp" -n "Ec_directDIA_simple_experiment" -f ".*\.raw"
+
+## running aLFQ using Rscript ##
+
+& 'C:\Program Files\R\R-4.1.1\bin\Rscript.exe' "F:\Data\ProtShtapa\pipeline_scripts\PeptoProtInference.R" "F:\\Data\\ProtShtapa\\Ec_DIA_simple_exp\\Ec_DIA_simple_intermediate" "F:\\Data\\ProtShtapa\\pipeline_scripts\\URF_20202_03_UP000000625_E_coli_83333_diffnames.fasta"
+
+## running xTop using Python (in the folder with the results file) ##
+
+C:\ProgramData\Anaconda3\python.exe F:\Data\ProtShtapa\alg_test\xtop-master\xTop_pipeline.py Report_xTop.csv
+
+## running LFAQ with lfaq.py ##
+
+C:\ProgramData\Anaconda3\python.exe F:\Data\ProtShtapa\alg_test\lfaq.py "F:\Data\ProtShtapa\alg_test\LFAQinput\Report_split4.csv" "F:\Data\ProtShtapa\alg_test\LFAQinput\URF_20202_03_UP000000625_E_coli_83333_diffnames.fasta" "F:\Data\ProtShtapa\alg_test\LFAQresults\intermediate\" "F:\Data\ProtShtapa\alg_test\LFAQ-master\ExecutableFiles\x64\" --IdentificationFileType "PeakView" --IdentifierOfStandardProtein "P" --StandardProteinsFilePath "F:\Data\ProtShtapa\alg_test\LFAQinput\test_conc_tab.csv"
+
+## running AbsQuant.py ##
+
+C:\ProgramData\Anaconda3\python.exe AbsQuant.py
+
