@@ -10,8 +10,6 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
     stan_conc = IS_conc[["FullPeptideName","ProteinName"]].copy()
-    stan_int["occurence"] = stan_int.count(axis="columns") # optional
-    length = len(sample_ids)+2 # optional, total samples number - 1
 
     for id in sample_ids:
         for pep in IS_conc.FullPeptideName.unique():
@@ -22,9 +20,6 @@ def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
                 IS_int, endo_int = [],[]
                 stan_conc = stan_conc[stan_conc.FullPeptideName != pep]
             if IS_int and endo_int:
-    # optional filtering
-                if stan_int.loc[(stan_int.FullPeptideName == pep) & (stan_int.labelled == "yes"), "occurence"].values[0] >= length:
-    # end
                     if IS_conc.loc[(IS_conc.FullPeptideName == pep), "Concentration"].values.size > 0:
                         conc = IS_conc.loc[(IS_conc.FullPeptideName == pep), "Concentration"].values[0]
                         stan_conc.loc[(stan_conc.FullPeptideName == pep), "pepconc_"+id] = (endo_int/IS_int)*conc
@@ -102,12 +97,12 @@ def get_invivo_prot_conc(m,workpath,sample_ids,stan_conc,plotpath,prot_seq,total
     return prot_labconc, prot_unlabconc
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input_directory", type=str, nargs=1, help="Full path of input directory")
-    parser.add_argument("standard_intensities", type=str, nargs=1, help="file name of standard intensities")
-    parser.add_argument("IS_concentrations", type=str, nargs=1, help="file name of IS concentrations")
-    parser.add_argument("protein_sequences", type=str, nargs=1, help="file name of protein sequences in FASTA format")
-    parser.add_argument("total_protein", type=str, nargs=1, help="file name of total protein per sample")
+    parser = argparse.ArgumentParser(description="Full proteome quantification with either labelled or label-free approach")
+    parser.add_argument("-iDir", dest="input_directory", type=str, help="Full path of input directory")
+    parser.add_argument("-Sint", dest="standard_intensities", type=str, help="Input file with standard intensities")
+    parser.add_argument("-Sconc", dest="IS_concentrations", type=str, help="Input file with IS concentrations")
+    parser.add_argument("-fasta", dest="protein_sequences", type=str, help="Input file with protein sequences in FASTA format")
+    parser.add_argument("-tot", dest="total_protein", type=str, help="Input file with total protein per sample")
     # write two optional arguments: one for Vc and one for dry weight
     args = parser.parse_args()
 
@@ -126,9 +121,9 @@ def main():
     total_protein = pd.read_csv(os.path.join(workpath,args.total_protein[0]), sep=",", header=0) # µg/cell
 
     # determine sample names and other variables
-    sample_ids = stan_int.columns.values.tolist()[2:-1]
+    sample_ids = stan_int.columns.values.tolist()[2:-1] # replace with input
     methods = ["top", "all", "iBAQ", "APEX", "NSAF","LFAQ","xTop"]
-    Vc = 3.9e-15 # L/cell
+    Vc = 3.9e-15 # L/cell # replace with input
 
     # calculate standard endogenous protein concentrations per sample
     stan_conc = get_stan_prot_conc(stan_int,IS_conc,sample_ids)
