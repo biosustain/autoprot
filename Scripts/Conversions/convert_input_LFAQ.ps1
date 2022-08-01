@@ -1,4 +1,4 @@
-param([string] $InputFilePath, [string] $OutputDirPath)
+param([string] $InputFilePath, [string] $name, [string[]] $samples, [string] $OutputDirPath)
 $results = Import-Csv $InputFilePath -Delimiter "`t"
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
 $results = $results | ForEach-Object {if (!$_.ProteinName) {$_.ProteinName = "P00000"} $_}
@@ -16,7 +16,6 @@ $results = $results | Group-Object FullPeptideName, run_id | ForEach-Object {
 	}
 }
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
-$samples = $results | Select-Object -ExpandProperty run_id -Unique
 foreach ($sam in $samples) {
 	$res = $results | Group-Object FullPeptideName | ForEach-Object {
 		$entries = $_.Group
@@ -29,5 +28,5 @@ foreach ($sam in $samples) {
 			$sam               = ($entries | Where-Object run_id -eq $sam).aggr_Peak_Area
 		}
 	}
-	$res | Export-Csv (Join-Path $OutputDirPath ("Report_" + $sam + ".csv")) -Delimiter "," -UseQuotes Never -NoTypeInformation
+	$res | Export-Csv (Join-Path $OutputDirPath ($name + "_" + $sam + ".csv")) -Delimiter "," -UseQuotes Never -NoTypeInformation
 }

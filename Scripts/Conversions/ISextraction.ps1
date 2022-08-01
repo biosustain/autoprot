@@ -1,6 +1,6 @@
-param([string] $InputFilePath, [string] $ISpepFilePath, [string] $OutputDirPath)
-$OutputFilePathIS = Join-Path $OutputDirPath "Ec_DIA_simple_ISpep_int.csv"
-$OutputFilePathReport = Join-Path $OutputDirPath "Ec_DIA_simple_NL.tsv"
+param([string] $InputFilePath, [string] $ISpepFilePath, [string] $name, [string[]] $samples, [string] $OutputDirPath)
+$OutputFilePathIS = Join-Path $OutputDirPath ($name + "_ISpep_int.csv")
+$OutputFilePathReport = Join-Path $OutputDirPath ($name + "_NL.tsv")
 $results = Import-Csv $InputFilePath -Delimiter "`t"
 $ISpep   = Import-Csv $ISpepFilePath -Delimiter ","
 $results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
@@ -8,7 +8,6 @@ $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area 
 $results = $results | Where-Object {$_.aggr_Peak_Area -ne 1}
 $results = $results | Where-Object {[double] $_.m_score -lt 0.01}
 $results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
-$samples = $results | Select-Object -ExpandProperty run_id -Unique
 $objectTemp = New-Object -TypeName PSObject
 $objectTemp | Add-Member -MemberType NoteProperty -Name FullPeptideName -Value ""
 $objectTemp | Add-Member -MemberType NoteProperty -Name ProteinName -Value ""
@@ -19,7 +18,7 @@ $objectTemp | Add-Member -MemberType NoteProperty -Name labelled -Value ""
 $ISint = $results | Where-Object {($_.aggr_Fragment_Annotation -Match "Arg6") -or ($_.aggr_Fragment_Annotation -Match "Lys6")}
 $ISint = $ISint | Where-Object {$_.decoy -eq "False"}
 $ISint = $ISpep | ForEach-Object{
-    $pep = $_.PeptideSequence
+    $pep = $_.FullPeptideName
     $match = $ISint | Where-Object {$_.FullPeptideName -eq $pep}
     if ($match) {
         foreach ($m in $match) {

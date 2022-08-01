@@ -1,5 +1,5 @@
-param([string] $InputFilePath, [string] $OutputDirPath)
-$OutputFilePath = Join-Path $OutputDirPath "Report_xTop.csv"
+param([string] $InputFilePath, [string] $name, [string[]] $samples, [string] $OutputDirPath)
+$OutputFilePath = Join-Path $OutputDirPath ($name + "_xTop.csv")
 $results = Import-Csv $InputFilePath -Delimiter "`t"
 $results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
@@ -17,7 +17,6 @@ $results = $results | Group-Object FullPeptideName, run_id | ForEach-Object {
 	}
 }
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
-$samples = $results | Select-Object -ExpandProperty run_id -Unique
 $objectTemp = New-Object -TypeName PSObject
 $objectTemp | Add-Member -MemberType NoteProperty -Name FullPeptideName -Value ""
 $objectTemp | Add-Member -MemberType NoteProperty -Name ProteinName -Value ""
