@@ -1,5 +1,5 @@
 param([string] $InputFilesPath, [string] $name, [string[]] $samples)
-$OutputFilePath = Join-Path $DirPath ($name + "_prot_int_LFAQ.csv")
+$OutputFilePath = Join-Path $InputFilesPath ($name + "_prot_int_LFAQ.csv")
 foreach ($sam in $samples) {
 	$res = Import-Csv (Join-Path $InputFilesPath ("ProteinResults_" + $sam + ".txt")) -Delimiter "`t"
 	$res = $res | Group-Object "Protein IDs" | ForEach-Object {

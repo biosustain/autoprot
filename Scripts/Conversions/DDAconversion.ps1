@@ -17,7 +17,7 @@ foreach ($sam in $samples) {
             }
         }
         [PSCustomObject]@{
-            run_id                   = $samples.IndexOf($sam)+1
+            run_id                   = ("sample_" + ($samples.IndexOf($sam)+1))
             ProteinName              = $_."Master Protein Accessions"
             FullPeptideName          = $seq
             Sequence                 = $seq
