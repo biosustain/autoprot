@@ -67,7 +67,7 @@ if ($approach -eq "label") {
 
     & "$conversions\ISextraction.ps1" -InputFilePath $report -ISpepFilePath $ISpep -name $ExpName -samples $samples -OutputDirPath $intermediate
     $ISreport = Join-Path $intermediate ($ExpName + "_ISpep_int.csv")
-    $NLreport = Join-Path $intermediate ($ExpName + "_NL.csv")
+    $NLreport = Join-Path $intermediate ($ExpName + "_NL.tsv")
     $INreport = $NLreport
 }
 
