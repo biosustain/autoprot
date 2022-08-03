@@ -1,19 +1,40 @@
-param([string] $mode, [string] $approach, [string] $InputDir, [string] $ExpName, [string] $SpecLib, [string] $ISpep, [string] $fasta, [string] $totalProt)
-# write checks for input variables, especially for mode (DIA or DDA) and approach (label or labelfree)
+param(
+    [Parameter(Mandatory=$true)][string] $mode,
+    [Parameter(Mandatory=$true)][string] $approach,
+    [Parameter(Mandatory=$true)][string] $InputDir,
+    [Parameter(Mandatory=$true)][string] $ExpName,
+    [Parameter(Mandatory=$true)][string] $fasta,
+    [Parameter(Mandatory=$true)][string] $totalProt,
+    [string] $SpecLib,
+    [string] $ISpep
+)
 
+$ErrorActionPreference = 'Stop'
+if ($mode -ne "label" -and $mode -ne "labelfree" -and $mode -ne "UPS2") {
+    Write-Error -Message "-mode must be either `"label`", `"labelfree`" or `"UPS2`""
+}
+if ($approach -ne "DDA" -and $approach -ne "DIA") {
+    Write-Error -Message "-approach must be either `"DDA`" or `"DIA`""
+}
+if ($approach -eq "DIA") {
+    if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
+}
+if ($mode -eq "label" -or $mode -eq "UPS2") {
+    if (!$ISpep) {Write-Error -Message "File with IS concentrations is required"}
+}
 
 $OutputDir = Join-Path $InputDir ((Get-Date -format 'yyyyMMdd_HHmmss') + "_" + $ExpName + "_" + $mode + "_" + $approach)
 $intermediate = "$OutputDir\intermediate_results"
-#$DIAanalysis = "$PSScriptRoot\DIA_analysis"
-#$conversions = "$PSScriptRoot\Conversions"
-#$normalisation = "$PSScriptRoot\Normalisation"
-#$quantification = "$PSScriptRoot\Quantification"
+$DIAanalysis = "$PSScriptRoot\DIA_analysis"
+$conversions = "$PSScriptRoot\Conversions"
+$normalisation = "$PSScriptRoot\Normalisation"
+$quantification = "$PSScriptRoot\Quantification"
 New-Item -ItemType Directory -Path $OutputDir | Out-Null
 New-Item -ItemType Directory -Path $intermediate | Out-Null
 
 ## DIA analysis using Spectronaut
 if ($mode -eq "DIA") {
-    $settings = "$PSScriptRoot\pipeline_settings.prop"
+    $settings = "$DIAanalysis\pipeline_settings.prop"
     $fileType = ".*\.raw"
     $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
     Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
@@ -29,7 +50,7 @@ if ($mode -eq "DIA") {
 
 ## Conversion of DDA results in PeptideGroups (.CSV) format
 if ($mode -eq "DDA") {
-    & "$PSScriptRoot\DDAconversion.ps1" -InputFilePath $DDA -name $ExpName -OutputDirPath $intermediate
+    & "$conversions\DDAconversion.ps1" -InputFilePath $DDA -name $ExpName -OutputDirPath $intermediate
     $PDreport = Join-Path $intermediate ($ExpName + "_PDreport.tsv")
     $samples = Import-Csv $PDreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
     if ($approach -eq "labelfree") {$INreport = $PDreport}
@@ -44,7 +65,7 @@ if ($approach -eq "label") {
         $report = $PDreport
     }
 
-    & "$PSScriptRoot\ISextraction.ps1" -InputFilePath $report -ISpepFilePath $ISpep -name $ExpName -samples $samples -OutputDirPath $intermediate
+    & "$conversions\ISextraction.ps1" -InputFilePath $report -ISpepFilePath $ISpep -name $ExpName -samples $samples -OutputDirPath $intermediate
     $ISreport = Join-Path $intermediate ($ExpName + "_ISpep_int.csv")
     $NLreport = Join-Path $intermediate ($ExpName + "_NL.csv")
     $INreport = $NLreport
@@ -54,13 +75,13 @@ if ($approach -eq "label") {
 $methods = "top","all","iBAQ","APEX","NSAF","LFAQ","xTop"
 
 ## using aLFQ - R package
-& "$PSScriptRoot\Report_to_OpenSWATH.ps1" -InputFilePath $INreport -name $ExpName -OutputDirPath $intermediate
-$aLFQrscript = "$PSScriptRoot\PeptoProtInference.R"
+& "$conversions\Report_to_OpenSWATH.ps1" -InputFilePath $INreport -name $ExpName -OutputDirPath $intermediate
+$aLFQrscript = "$normalisation\PeptoProtInference.R"
 $aLFQargsList = "$aLFQrscript $intermediate $ExpName $fasta"
 Start-Process -FilePath Rscript -ArgumentList $aLFQargsList -Wait
 
 ## using xTop - Python package
-& "$PSScriptRoot\Report_to_xTopinput.ps1" -InputFilePath $INreport -name $ExpName -samples $samples -OutputDirPath $intermediate
+& "$conversions\Report_to_xTopinput.ps1" -InputFilePath $INreport -name $ExpName -samples $samples -OutputDirPath $intermediate
 $xTopInput = $ExpName + "_xTop.csv"
 $xTopPYscript = Join-Path ($env:Path -split ";" | Where-Object {$_ -match "xtop"}) "xTop_pipeline.py"
 $xTopargsList = "`"$xTopPYscript`" $xTopInput"
@@ -71,21 +92,21 @@ Copy-Item -Path (Join-Path $xTopOutputDir ("[" + $xTopInput + "] Intensity xTop.
 ## using LFAQ - C++ executables and LFAQ.py wrapper
 $LFAQintermediate = "$intermediate\LFAQintermediate"
 New-Item -ItemType Directory -Path $LFAQintermediate | Out-Null
-& "$PSScriptRoot\convert_input_LFAQ.ps1" -InputFilePath $INreport -name $ExpName -samples $samples -OutputDirPath $LFAQintermediate
-$LFAQPYscript = "$PSScriptRoot\lfaq.py"
+& "$conversions\convert_input_LFAQ.ps1" -InputFilePath $INreport -name $ExpName -samples $samples -OutputDirPath $LFAQintermediate
+$LFAQPYscript = "$normalisation\lfaq.py"
 $LFAQexe = $env:Path -split ";" | Where-Object {$_ -match "LFAQ"}
-$randomConcFile = "$PSScriptRoot\randomConcFile.csv"
+$randomConcFile = "$normalisation\randomConcFile.csv"
 foreach ($sam in $samples) {
     $samFile = Join-Path $LFAQintermediate ($ExpName + "_" + $sam + ".csv")
     $LFAQargsList = "$LFAQPYscript $samFile $fasta $LFAQintermediate `"$LFAQexe`" --IdentificationFileType `"PeakView`" --IdentifierOfStandardProtein `"P`" --StandardProteinsFilePath $randomConcFile"
     Start-Process -FilePath python -ArgumentList $LFAQargsList -Wait
     Rename-Item -Path "$LFAQintermediate\ProteinResultsExperimentOnlyOne.txt" -NewName ("ProteinResults_" + $sam + ".txt")
 }
-& "$PSScriptRoot\convert_output_LFAQ.ps1" -InputFilesPath $LFAQintermediate -name $ExpName -samples $samples
+& "$conversions\convert_output_LFAQ.ps1" -InputFilesPath $LFAQintermediate -name $ExpName -samples $samples
 Copy-Item -Path (Join-Path $LFAQintermediate ($ExpName + "_prot_int_LFAQ.csv")) -Destination (Join-Path $intermediate ($ExpName + "_prot_int_LFAQ.csv"))
 
 ## Absolute quantification using label or label-free approach
-$AQPYscript = "$PSScriptRoot\AbsQuant.py"
+$AQPYscript = "$quantification\AbsQuant.py"
 if ($approach -eq "label") {
     $AQargsList = "$AQPYscript --label `"label`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sint $ISreport --Sconc $ISpep"
 }

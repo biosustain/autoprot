@@ -128,7 +128,7 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,prot_seq,total_protei
 
 def main():
     parser = argparse.ArgumentParser(description="Full proteome quantification with either labelled or label-free approach")
-    parser.add_argument("--label", dest="label", type=str, required=True, help="Labelled or label-free approach with the following options: 'label', 'unlabel', 'UPS2'")
+    parser.add_argument("--label", dest="label", type=str, required=True, help="Labelled or label-free approach with the following options: 'label', 'labelfree', 'UPS2'")
     parser.add_argument("--name", dest="expname", type=str, required=True, help="Name of the experiment")
     parser.add_argument("--inDir", dest="input_directory", required=True, type=str, help="Full path of input directory")
     parser.add_argument("--sam", dest="samples", nargs="+", required=True, help="String of spaced-out samples names as in the input files, e.g. '1 2 3'")
@@ -169,7 +169,7 @@ def main():
         # export concentrations per method
             prot_labconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
-    elif approach == "unlabel":
+    elif approach == "labelfree":
         prot_seq = SeqIO.index(os.path.join(workpath,args.protein_sequences), "fasta")
 
         # calculate all in vivo protein concentrations per sample
