@@ -10,16 +10,16 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if ($mode -ne "label" -and $mode -ne "labelfree" -and $mode -ne "UPS2") {
-    Write-Error -Message "-mode must be either `"label`", `"labelfree`" or `"UPS2`""
-}
-if ($approach -ne "DDA" -and $approach -ne "DIA") {
+if ($mode -ne "DDA" -and $mode -ne "DIA") {
     Write-Error -Message "-approach must be either `"DDA`" or `"DIA`""
 }
-if ($approach -eq "DIA") {
+if ($approach -ne "label" -and $approach -ne "labelfree" -and $approach -ne "UPS2") {
+    Write-Error -Message "-mode must be either `"label`", `"labelfree`" or `"UPS2`""
+}
+if ($mode -eq "DIA") {
     if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
 }
-if ($mode -eq "label" -or $mode -eq "UPS2") {
+if ($approach -eq "label" -or $approach -eq "UPS2") {
     if (!$ISpep) {Write-Error -Message "File with IS concentrations is required"}
 }
 
