@@ -87,7 +87,7 @@ $xTopPYscript = Join-Path ($env:Path -split ";" | Where-Object {$_ -match "xtop"
 $xTopargsList = "`"$xTopPYscript`" $xTopInput"
 Start-Process -FilePath python -ArgumentList $xTopargsList -WorkingDirectory $intermediate -Wait
 $xTopOutputDir = (Get-ChildItem -Path $intermediate -Filter "*export" -Recurse -Directory).Fullname
-Copy-Item -Path (Join-Path $xTopOutputDir ("[" + $xTopInput + "] Intensity xTop.csv")) -Destination (Join-Path $intermediate ($ExpName + "_prot_int_xTop.csv"))
+Copy-Item -LiteralPath (Join-Path $xTopOutputDir ("[" + $xTopInput + "] Intensity xTop.csv")) -Destination (Join-Path $intermediate ($ExpName + "_prot_int_xTop.csv"))
 
 ## using LFAQ - C++ executables and LFAQ.py wrapper
 $LFAQintermediate = "$intermediate\LFAQintermediate"
@@ -117,5 +117,5 @@ Start-Process -FilePath python -ArgumentList $AQargsList -Wait
 $AQoutputDir = "$intermediate\Absolute_quantification"
 foreach ($m in $methods) {
     $outputFileName = $ExpName + "_prot_conc_" + $m + ".csv"
-    Copy-Item -Path (Join-Path @AQoutputDir $outputFileName) -Destination (Join-Path $intermediate $outputFileName)
+    Copy-Item -Path (Join-Path $AQoutputDir $outputFileName) -Destination (Join-Path $OutputDir $outputFileName)
 }
