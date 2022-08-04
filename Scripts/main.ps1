@@ -86,7 +86,7 @@ $xTopInput = $ExpName + "_xTop.csv"
 $xTopPYscript = Join-Path ($env:Path -split ";" | Where-Object {$_ -match "xtop"}) "xTop_pipeline.py"
 $xTopargsList = "`"$xTopPYscript`" $xTopInput"
 Start-Process -FilePath python -ArgumentList $xTopargsList -WorkingDirectory $intermediate -Wait
-$xTopOutputDir = (Get-ChildItem -Path $intermediate -Filter "export" -Recurse -Directory).Fullname
+$xTopOutputDir = (Get-ChildItem -Path $intermediate -Filter "*export" -Recurse -Directory).Fullname
 Copy-Item -Path (Join-Path $xTopOutputDir ("[" + $xTopInput + "] Intensity xTop.csv")) -Destination (Join-Path $intermediate ($ExpName + "_prot_int_xTop.csv"))
 
 ## using LFAQ - C++ executables and LFAQ.py wrapper
