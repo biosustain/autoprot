@@ -1,9 +1,10 @@
 
 args <- commandArgs(trailingOnly = TRUE)
-work_dir <- args[1]
-fasta_file <- args[2]
+workdir <- args[1]
+expname <- args[2]
+fasta_file <- args[3]
 
-setwd(work_dir)
+setwd(workdir)
 
 library(aLFQ)
 
@@ -12,8 +13,9 @@ APEX_ORBI.af <- apexFeatures(APEX_ORBI)
 APEX_ORBI.apex <- APEX(data=APEX_ORBI.af)
 
 methods <- list("top", "all", "iBAQ", "APEX", "NSAF")
+OSreport <- gsub(" ","",paste(expname,"_OpenSWATH.tsv"))
 
-data <- import(ms_filenames = "Report_OpenSWATH.tsv", ms_filetype = "openswath",
+data <- import(ms_filenames = OSreport, ms_filetype = "openswath",
                mprophet_cutoff = 0.01, openswath_removedecoys = TRUE)
 
 for (i in methods) {
@@ -25,5 +27,5 @@ for (i in methods) {
                               fasta = fasta_file)
   names(results)[names(results) == "response"] <- gsub(" ","",paste("response_",i))
   results <- subset(results,select = -c(concentration))
-  write.csv(results, file = gsub(" ","",paste("Ec_proteins_int_",i,".csv")), row.names = FALSE, quote = FALSE)
+  write.csv(results, file = gsub(" ","",paste(expname,"_prot_int_",i,".csv")), row.names = FALSE, quote = FALSE)
 }
