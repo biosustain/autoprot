@@ -40,7 +40,6 @@ if ($mode -eq "DIA") {
     Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
     $SNoutputDir = (Get-ChildItem -Path $intermediate -Filter ("*" + $ExpName) -Recurse -Directory).Fullname
     $SNreport = Join-Path $intermediate ($ExpName + "_SNreport.tsv")
-    Import-Csv $SNreport -Delimiter "`t" | Where-Object {$_.aggr_Peak_Area -ne "NaN"} | Export-Csv $SNreport -Delimiter "`t" -UseQuotes Never -NoTypeInformation
     Copy-Item -Path (Join-Path $SNoutputDir ($ExpName + "_Report_pipeline_report (Normal).xls")) -Destination $SNreport
     $samples = Import-Csv $SNreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
     if ($approach -eq "labelfree") {$INreport = $SNreport}
