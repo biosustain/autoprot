@@ -85,7 +85,7 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 
     return prot_labconc
 
-def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,prot_seq,total_protein,Vc):
+def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,Vc):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
 
@@ -94,19 +94,19 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,prot_seq,total_protei
         intensities = intensities[intensities[protid] != "Biogno"]
         intensities = intensities[intensities[protid] != ""]
         intensities = intensities[intensities[protid] != "0"]
-        prot_unlabconc = intensities[protid].to_frame()
+        prot_freeconc = intensities[protid].to_frame()
     else:
         protid = "protein_id"
         intensities = intensities[intensities[protid] != "Biogno"]
         intensities = intensities[intensities[protid] != ""]
         intensities = intensities[intensities[protid] != "0"]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
-        prot_unlabconc = intensities[protid].to_frame()
+        prot_freeconc = intensities[protid].to_frame()
 
     for id in sample_ids:
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
 
-    # unlabelled absolute quantification using total protein approach
+    # standardfree absolute quantification using total protein approach
         for prot in sample[protid].tolist():
             if ";" in prot:
                 mwprot = prot[:prot.find(";")]
@@ -114,21 +114,21 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,prot_seq,total_protei
                 mwprot = prot
             MW = ProteinAnalysis(str(prot_seq[mwprot].seq)).molecular_weight()
             ratio = sample.loc[sample[protid] == prot, id].values[0]/sample[id].sum()
-            prot_unlabconc.loc[prot_unlabconc[protid] == prot, "sample_conc(fmol/µg)_"+id] = ratio*(1e9/MW)
+            prot_freeconc.loc[prot_freeconc[protid] == prot, "sample_conc(fmol/µg)_"+id] = ratio*(1e9/MW)
 
     # calculate in vivo proteins concentrations
         TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
-        prot_unlabconc["invivo_conc(mM)"+id] = prot_unlabconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
+        prot_freeconc["invivo_conc(mM)"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
 
-    return prot_unlabconc
+    return prot_freeconc
 
-## add function for UPS2
-#def get_invivo_prot_conc_ups():
+## add function for unlabel
+#def get_invivo_prot_conc_unlabel():
 
 
 def main():
     parser = argparse.ArgumentParser(description="Full proteome quantification with either labelled or label-free approach")
-    parser.add_argument("--label", dest="label", type=str, required=True, help="Labelled or label-free approach with the following options: 'label', 'labelfree', 'UPS2'")
+    parser.add_argument("--label", dest="label", type=str, required=True, help="Labelled or label-free approach with the following options: 'label', 'unlabel', 'free'")
     parser.add_argument("--name", dest="expname", type=str, required=True, help="Name of the experiment")
     parser.add_argument("--inDir", dest="input_directory", required=True, type=str, help="Full path of input directory")
     parser.add_argument("--sam", dest="samples", nargs="+", required=True, help="String of spaced-out samples names as in the input files, e.g. '1 2 3'")
@@ -169,16 +169,16 @@ def main():
         # export concentrations per method
             prot_labconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
-    elif approach == "labelfree":
+    elif approach == "free":
         prot_seq = SeqIO.index(os.path.join(workpath,args.protein_sequences), "fasta")
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_unlabconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,prot_seq,total_protein,Vc)
+            prot_freeconc = get_invivo_prot_conc_free(experiment_name,m,workpath,sample_ids,prot_seq,total_protein,Vc)
         # export concentrations per method
-            prot_unlabconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
+            prot_freeconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
-    # elif approach == "UPS2":
+    # elif approach == "unlabel":
     #     plotpath = os.path.join(resultspath,"LR_plots")
     #     if not os.path.exists(plotpath):
     #         os.makedirs(plotpath)
@@ -192,9 +192,9 @@ def main():
 
     #     # calculate all in vivo protein concentrations per sample
     #     for m in methods:
-    #         prot_upsconc = get_invivo_prot_conc_ups(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc)
+    #         prot_unlabelconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc)
     #     # export concentrations per method
-    #         prot_upsconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
+    #         prot_unlabelconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
 if __name__ == "__main__":
     main()

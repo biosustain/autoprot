@@ -11,15 +11,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if ($mode -ne "DDA" -and $mode -ne "DIA") {
-    Write-Error -Message "-approach must be either `"DDA`" or `"DIA`""
+    Write-Error -Message "-mode must be either `"DDA`" or `"DIA`""
 }
-if ($approach -ne "label" -and $approach -ne "labelfree" -and $approach -ne "UPS2") {
-    Write-Error -Message "-mode must be either `"label`", `"labelfree`" or `"UPS2`""
+if ($approach -ne "label" -and $approach -ne "unlabel" -and $approach -ne "free") {
+    Write-Error -Message "-approach must be either `"label`", `"unlabel`" or `"free`""
 }
 if ($mode -eq "DIA") {
     if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
 }
-if ($approach -eq "label" -or $approach -eq "UPS2") {
+if ($approach -eq "label" -or $approach -eq "unlabel") {
     if (!$ISpep) {Write-Error -Message "File with IS concentrations is required"}
 }
 
@@ -34,7 +34,7 @@ New-Item -ItemType Directory -Path $intermediate | Out-Null
 
 ## DIA analysis using Spectronaut
 if ($mode -eq "DIA") {
-    $settings = "$DIAanalysis\pipeline_settings.prop"
+    $settings = "$DIAanalysis\DIA_settings.prop"
     $fileType = ".*\.raw"
     $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
     Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
@@ -42,7 +42,7 @@ if ($mode -eq "DIA") {
     $SNreport = Join-Path $intermediate ($ExpName + "_SNreport.tsv")
     Copy-Item -Path (Join-Path $SNoutputDir ($ExpName + "_Report_pipeline_report (Normal).xls")) -Destination $SNreport
     $samples = Import-Csv $SNreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
-    if ($approach -eq "labelfree") {$INreport = $SNreport}
+    if ($approach -eq "free") {$INreport = $SNreport}
 }
 
 ## DIA analysis using DIA-NN
@@ -53,7 +53,7 @@ if ($mode -eq "DDA") {
     & "$conversions\DDAconversion.ps1" -InputFilePath $DDA -name $ExpName -OutputDirPath $intermediate
     $PDreport = Join-Path $intermediate ($ExpName + "_PDreport.tsv")
     $samples = Import-Csv $PDreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
-    if ($approach -eq "labelfree") {$INreport = $PDreport}
+    if ($approach -eq "free") {$INreport = $PDreport}
 }
 
 ## IS extraction for label approach
@@ -110,8 +110,8 @@ $AQPYscript = "$quantification\AbsQuant.py"
 if ($approach -eq "label") {
     $AQargsList = "$AQPYscript --label `"label`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sint $ISreport --Sconc $ISpep"
 }
-elseif ($approach -eq "labelfree") {
-    $AQargsList = "$AQPYscript --label `"unlabel`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --fasta $fasta"
+elseif ($approach -eq "free") {
+    $AQargsList = "$AQPYscript --label `"free`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --fasta $fasta"
 }
 Start-Process -FilePath python -ArgumentList $AQargsList -Wait
 $AQoutputDir = "$intermediate\Absolute_quantification"
