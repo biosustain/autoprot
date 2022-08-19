@@ -33,18 +33,25 @@ def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
 def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
+    remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
 
     if m == "xTop":
         protid = "Protein ID"
-        intensities = intensities[intensities[protid] != "Biogno"]
-        intensities = intensities[intensities[protid] != ""]
-        intensities = intensities[intensities[protid] != "0"]
+        for prot in intensities[protid].tolist():
+            if ";" in prot:
+                intensities = intensities[intensities[protid] != prot]
+            for id in remove_ID:
+                if prot == id:
+                    intensities = intensities[intensities[protid] != prot]
         prot_labconc = intensities[protid].to_frame()
     else:
         protid = "protein_id"
-        intensities = intensities[intensities[protid] != "Biogno"]
-        intensities = intensities[intensities[protid] != ""]
-        intensities = intensities[intensities[protid] != "0"]
+        for prot in intensities[protid].tolist():
+            if ";" in prot:
+                intensities = intensities[intensities[protid] != prot]
+            for id in remove_ID:
+                if prot == id:
+                    intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
         prot_labconc = intensities[protid].to_frame()
 
@@ -88,18 +95,25 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,Vc):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
+    remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
 
     if m == "xTop":
         protid = "Protein ID"
-        intensities = intensities[intensities[protid] != "Biogno"]
-        intensities = intensities[intensities[protid] != ""]
-        intensities = intensities[intensities[protid] != "0"]
+        for prot in intensities[protid].tolist():
+            if ";" in prot:
+                intensities = intensities[intensities[protid] != prot]
+            for id in remove_ID:
+                if prot == id:
+                    intensities = intensities[intensities[protid] != prot]
         prot_freeconc = intensities[protid].to_frame()
     else:
         protid = "protein_id"
-        intensities = intensities[intensities[protid] != "Biogno"]
-        intensities = intensities[intensities[protid] != ""]
-        intensities = intensities[intensities[protid] != "0"]
+        for prot in intensities[protid].tolist():
+            if ";" in prot:
+                intensities = intensities[intensities[protid] != prot]
+            for id in remove_ID:
+                if prot == id:
+                    intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
         prot_freeconc = intensities[protid].to_frame()
 
@@ -107,14 +121,14 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,V
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
 
     # standardfree absolute quantification using total protein approach
+        tot_mass = 0
         for prot in sample[protid].tolist():
-            if ";" in prot:
-                mwprot = prot[:prot.find(";")]
-            else:
-                mwprot = prot
-            MW = ProteinAnalysis(str(prot_seq[mwprot].seq)).molecular_weight()
-            ratio = sample.loc[sample[protid] == prot, id].values[0]/sample[id].sum()
-            prot_freeconc.loc[prot_freeconc[protid] == prot, "sample_conc(fmol/µg)_"+id] = ratio*(1e9/MW)
+            MW = ProteinAnalysis(str(prot_seq[prot].seq)).molecular_weight()
+            p_int = sample.loc[sample[protid] == prot, id].values[0]
+            tot_mass += MW*p_int
+        for prot in sample[protid].tolist():
+            p_int = sample.loc[sample[protid] == prot, id].values[0]
+            prot_freeconc.loc[prot_freeconc[protid] == prot, "sample_conc(fmol/µg)_"+id] = p_int*(1e9/tot_mass)
 
     # calculate in vivo proteins concentrations
         TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
