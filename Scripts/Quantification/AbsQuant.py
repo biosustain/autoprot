@@ -30,7 +30,7 @@ def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
                 stan_conc.loc[(stan_conc.ProteinName == prot), "protconc_"+id] = sum(temp)/len(temp)
     return stan_conc
 
-def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc):
+def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
     remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
@@ -88,11 +88,15 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 
         # calculate in vivo proteins concentrations
         TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
+        if "Volume" in total_protein.columns:
+            Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
+        else:
+            Vc = 3.9e-15 # L/cell
         prot_labconc["invivo_conc(mM)_"+id] = prot_labconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
 
     return prot_labconc
 
-def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,Vc):
+def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
     remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
@@ -132,12 +136,16 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,V
 
     # calculate in vivo proteins concentrations
         TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
+        if "Volume" in total_protein.columns:
+            Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
+        else:
+            Vc = 3.9e-15 # L/cell
         prot_freeconc["invivo_conc(mM)"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
 
     return prot_freeconc
 
 ## add function for unlabel
-#def get_invivo_prot_conc_unlabel():
+#def get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
 
 
 def main():
@@ -163,7 +171,6 @@ def main():
     # determine sample names and other variables
     sample_ids = args.samples
     methods = args.methods
-    Vc = 3.9e-15 # L/cell
 
     if approach == "label":
         plotpath = os.path.join(resultspath,"LR_plots")
@@ -179,7 +186,7 @@ def main():
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_labconc = get_invivo_prot_conc_label(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc)
+            prot_labconc = get_invivo_prot_conc_label(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein)
         # export concentrations per method
             prot_labconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
@@ -188,7 +195,7 @@ def main():
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_freeconc = get_invivo_prot_conc_free(experiment_name,m,workpath,sample_ids,prot_seq,total_protein,Vc)
+            prot_freeconc = get_invivo_prot_conc_free(experiment_name,m,workpath,sample_ids,prot_seq,total_protein)
         # export concentrations per method
             prot_freeconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
@@ -206,7 +213,7 @@ def main():
 
     #     # calculate all in vivo protein concentrations per sample
     #     for m in methods:
-    #         prot_unlabelconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,Vc)
+    #         prot_unlabelconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein)
     #     # export concentrations per method
     #         prot_unlabelconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
