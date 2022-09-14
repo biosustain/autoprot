@@ -6,18 +6,22 @@ param(
     [Parameter(Mandatory=$true)][string] $fasta,
     [Parameter(Mandatory=$true)][string] $totalProt,
     [string] $SpecLib,
+    [string] $BGSfasta,
     [string] $ISpep
 )
 
 $ErrorActionPreference = 'Stop'
-if ($mode -ne "DDA" -and $mode -ne "DIA") {
-    Write-Error -Message "-mode must be either `"DDA`" or `"DIA`""
+if ($mode -ne "DDA" -and $mode -ne "DIA" -and $mode -ne "directDIA") {
+    Write-Error -Message "-mode must be either `"DDA`", `"DIA`" or `"directDIA`""
 }
 if ($approach -ne "label" -and $approach -ne "unlabel" -and $approach -ne "free") {
     Write-Error -Message "-approach must be either `"label`", `"unlabel`" or `"free`""
 }
 if ($mode -eq "DIA") {
     if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
+}
+if ($mode -eq "directDIA") {
+    if (!$BGSfasta -or $BGSfasta -notmatch ".bgsfasta") {Write-Error -Message "File with fasta in BGSfasta format required"}
 }
 if ($approach -eq "label" -or $approach -eq "unlabel") {
     if (!$ISpep) {Write-Error -Message "File with IS concentrations is required"}
@@ -33,10 +37,17 @@ New-Item -ItemType Directory -Path $OutputDir | Out-Null
 New-Item -ItemType Directory -Path $intermediate | Out-Null
 
 ## DIA analysis using Spectronaut
-if ($mode -eq "DIA") {
-    $settings = "$DIAanalysis\DIA_settings.prop"
+if ($mode -eq "DIA" -or $mode -eq "directDIA") {
     $fileType = ".*\.raw"
-    $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
+    if ($mode -eq "DIA") {
+        $settings = "$DIAanalysis\DIA_settings.prop"
+        $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
+    }
+    elseif ($mode -eq "directDIA") {
+        $settings = "$DIAanalysis\directDIA_settings.prop"
+        $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
+    }
+
     Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
     $SNoutputDir = (Get-ChildItem -Path $intermediate -Filter ("*" + $ExpName) -Recurse -Directory).Fullname
     $SNreport = Join-Path $intermediate ($ExpName + "_SNreport.tsv")
@@ -58,7 +69,7 @@ if ($mode -eq "DDA") {
 
 ## IS extraction for label approach
 if ($approach -eq "label") {
-    if ($mode -eq "DIA") {
+    if ($mode -eq "DIA" -or $mode -eq "directDIA") {
         $report = $SNreport
     }
     elseif ($mode -eq "DDA") {
