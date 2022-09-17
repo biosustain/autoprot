@@ -7,7 +7,7 @@ param(
     [Parameter(Mandatory=$true)][string] $totalProt,
     [string] $SpecLib,
     [string] $BGSfasta,
-    [string] $ISpep
+    [string] $ISconc
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,7 +24,7 @@ if ($mode -eq "directDIA") {
     if (!$BGSfasta -or $BGSfasta -notmatch ".bgsfasta") {Write-Error -Message "File with fasta in BGSfasta format required"}
 }
 if ($approach -eq "label" -or $approach -eq "unlabel") {
-    if (!$ISpep) {Write-Error -Message "File with IS concentrations is required"}
+    if (!$ISconc) {Write-Error -Message "File with IS concentrations is required"}
 }
 
 $OutputDir = Join-Path $InputDir ((Get-Date -format 'yyyyMMdd_HHmmss') + "_" + $ExpName + "_" + $mode + "_" + $approach)
@@ -76,7 +76,7 @@ if ($approach -eq "label") {
         $report = $PDreport
     }
 
-    & "$conversions\ISextraction.ps1" -InputFilePath $report -ISpepFilePath $ISpep -name $ExpName -samples $samples -OutputDirPath $intermediate
+    & "$conversions\ISextraction.ps1" -InputFilePath $report -ISpepFilePath $ISconc -name $ExpName -samples $samples -OutputDirPath $intermediate
     $ISreport = Join-Path $intermediate ($ExpName + "_ISpep_int.csv")
     $NLreport = Join-Path $intermediate ($ExpName + "_NL.tsv")
     $INreport = $NLreport
@@ -119,7 +119,10 @@ Copy-Item -Path (Join-Path $LFAQintermediate ($ExpName + "_prot_int_LFAQ.csv")) 
 ## Absolute quantification using label or label-free approach
 $AQPYscript = "$quantification\AbsQuant.py"
 if ($approach -eq "label") {
-    $AQargsList = "$AQPYscript --label `"label`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sint $ISreport --Sconc $ISpep"
+    $AQargsList = "$AQPYscript --label `"label`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sint $ISreport --Sconc $ISconc"
+}
+elseif ($approach -eq "unlabel") {
+    $AQargsList = "$AQPYscript --label `"unlabel`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sconc $ISconc"
 }
 elseif ($approach -eq "free") {
     $AQargsList = "$AQPYscript --label `"free`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --fasta $fasta"
