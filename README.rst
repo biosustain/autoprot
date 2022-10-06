@@ -7,7 +7,7 @@ autoprot
     :target: https://www.gnu.org/licenses/gpl-3.0
     :alt: GNU General Public License 3.0
 
-.. image:: https://img.shields.io/badge/operating%20system-Windows-9cf
+.. image:: https://img.shields.io/badge/operating%20system-Windows-orange
     :target: https://www.microsoft.com/en-us/windows
     :alt: Windows
 
