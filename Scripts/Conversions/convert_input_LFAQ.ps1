@@ -1,5 +1,6 @@
 param([string] $InputFilePath, [string] $name, [string[]] $samples, [string] $OutputDirPath)
 $results = Import-Csv $InputFilePath -Delimiter "`t"
+$results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
 $results = $results | ForEach-Object {if (!$_.ProteinName) {$_.ProteinName = "P00000"} $_}
 $results = $results | Where-Object {$_.decoy -eq "False"}
