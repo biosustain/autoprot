@@ -26,6 +26,14 @@ Install
 
 Installation
 
+::
+
+    git clone git@github.com:biosustain/autoprot.git
+
+add to PATH variable
+
+test with example files
+
 Dependencies
 ^^^^^^^^^^^^
 
@@ -43,21 +51,16 @@ xTop                1.2                    https://gitlab.com/mm87/xtop (Add loc
 LFAQ                1.0.0                  https://github.com/LFAQ/LFAQ (Add location of LFAQ executables to PATH variable.)
 =================== ====================== ============
 
-Input data
-==========
-
-Input data
-
 Usage
 =====
 
-The ``main.ps1`` script can be used in PowerShell 7 as follows:
+The ``autoprot.ps1`` script can be used in PowerShell 7 when added to the PATH variable as follows:
 
 ::
 
-    main.ps1 [commands]
+    autoprot [args]
     
-The available commands are:
+The available arguments are:
 
 -mode        [string] **mandatory** specify the acquisition mode as "DDA", "DIA" or "directDIA".
 -approach    [string] **mandatory** specify the quantification approach as "label", "unlabel" or "free".
@@ -69,10 +72,18 @@ The available commands are:
 -BGSfasta    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (not open-source).
 -ISconc      [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
 
+Specific input data
+==========
+
+Input data
+
 Output data
 ===========
 
 Output data
+
+Intermediate files
+^^^^^^^^^^^^^^^^^^
 
 
 Copyright
