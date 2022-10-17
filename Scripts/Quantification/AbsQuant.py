@@ -44,6 +44,7 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_labconc = intensities[protid].to_frame()
+        prot_labconc.columns = ["ProteinName"]
     else:
         protid = "protein_id"
         for prot in intensities[protid].tolist():
@@ -54,6 +55,7 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
         prot_labconc = intensities[protid].to_frame()
+        prot_labconc.columns = ["ProteinName"]
 
     for id in sample_ids:
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
@@ -110,6 +112,7 @@ def get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_unlabconc = intensities[protid].to_frame()
+        prot_unlabconc.columns = ["ProteinName"]
     else:
         protid = "protein_id"
         for prot in intensities[protid].tolist():
@@ -120,6 +123,7 @@ def get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
         prot_unlabconc = intensities[protid].to_frame()
+        prot_unlabconc.columns = ["ProteinName"]
 
     for id in sample_ids:
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
@@ -175,6 +179,7 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_freeconc = intensities[protid].to_frame()
+        prot_freeconc.columns = ["ProteinName"]
     else:
         protid = "protein_id"
         for prot in intensities[protid].tolist():
@@ -185,6 +190,7 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
         prot_freeconc = intensities[protid].to_frame()
+        prot_freeconc.columns = ["ProteinName"]
 
     for id in sample_ids:
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
