@@ -70,8 +70,10 @@ The ``autoprot.ps1`` script can be used in PowerShell 7 when added to the PATH v
 
 ::
 
-    autoprot [args]
-    
+    autoprot.ps1 [args]
+
+help
+
 The available arguments are:
 
 -mode        [string] **mandatory** specify the acquisition mode as "DDA", "DIA" or "directDIA".
