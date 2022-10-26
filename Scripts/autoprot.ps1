@@ -1,3 +1,67 @@
+<#
+
+    .SYNOPSIS
+    The autoprot pipeline allows for absolute quantification of proteins from raw mass spectrometry 
+    (MS) files in an automated manner.
+
+    .DESCRIPTION
+    The autoprot pipeline covers data analysis from both DIA and DDA methods, where a fully open-source 
+    option is avalaible for DIA methods. Raw data from labelled, label-free and standard-free approaches 
+    can be analysed with the pipeline. The normalisation of peptide intensities into protein intensities 
+    is performed with seven different algorithms to identify the optimal algorithm for the current experiment. 
+    The incorporated algorithms are Top3, Topall, iBAQ, APEX, NSAF, LFAQ, and xTop.
+
+    .PARAMETER mode
+    [string] mandatory specify the acquisition mode as "DDA", "DIA" or "directDIA".
+
+    .PARAMETER approach
+    [string] mandatory specify the quantification approach as "label", "unlabel" or "free".
+
+    .PARAMETER InputDir
+    [directory] mandatory specify the input directory containing all input files with raw MS spectra. 
+    The output directory will be located in the input directory after the run.
+
+    .PARAMETER ExpName
+    [string] mandatory specify the name of the experiment.
+
+    .PARAMETER fasta
+    [file] mandatory specify the FASTA file with the proteome sequences.
+
+    .PARAMETER totalProt
+    [file] mandatory specify the file with total protein amount for each sample. 
+    Optional to include the cell volume to be used for each sample
+
+    .PARAMETER SpecLib
+    [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.
+
+    .PARAMETER BGSfasta
+    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, 
+    which is required for the "directDIA" mode using Spectronaut (not open source).
+
+    .PARAMETER ISconc
+    [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute 
+    concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
+
+    .INPUTS
+    Input can only be provided through the corresponding arguments.
+
+    .OUTPUTS
+    The output directory will be located in the input directory after the run and 
+    will contain seven files with a protein concentration table, one for each algorithm.
+
+    .EXAMPLE
+    autoprot.ps1 [args]
+
+    .EXAMPLE
+    autoprot.ps1 -mode "directDIA" -approach "free" -InputDir "$PSScriptRoot\..\Examples\Input" 
+    -ExpName "test_run" -fasta "$PSScriptRoot\..\Examples\Input\" -totalProt "$PSScriptRoot\..\Examples\Input\" 
+    -BGSfasta "$PSScriptRoot\..\Examples\Input\"
+
+    .LINK
+    https://github.com/biosustain/autoprot
+
+#>
+
 param(
     [Parameter(Mandatory=$true)][string] $mode,
     [Parameter(Mandatory=$true)][string] $approach,
