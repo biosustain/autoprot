@@ -66,7 +66,7 @@ LFAQ                1.0.0                  https://github.com/LFAQ/LFAQ (Add loc
 Usage
 =====
 
-The ``autoprot.ps1`` script can be used in PowerShell 7 (when added to the PATH variable) as follows:
+The ``autoprot.ps1`` script can be executed in PowerShell 7 (when added to the PATH variable) as follows:
 
 ::
 
@@ -76,7 +76,13 @@ To access the autoprot help from the command line in PowerShell 7:
 
 ::
 
-    Get-Help autoprot.ps1 -full
+    Get-Help autoprot.ps1 -Full
+
+When the ``autoprot.ps1`` script is located on a drive with restricted access, e.g. a network drive and is cannot be executed, the following command can provide access to execute the script:
+
+::
+
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
 The available arguments are:
 
