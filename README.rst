@@ -97,6 +97,10 @@ All workflows in ``DIA`` and ``directDIA`` mode can be initialised from .RAW fil
 using either `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
 or `DIA-NN <https://github.com/vdemichev/DiaNN>`_ (open source; `Demichev et al., 2019 <https://www.nature.com/articles/s41592-019-0638-x>`_).
 Any workflow in ``DDA`` mode can be initialised from the ``PeptideGroups.csv`` output file of `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ (Thermo Fisher Scientific, Waltham, MA, USA)
+How to get the ``PeptideGroups.csv`` file with `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ results:
+Open the .PDRESULTS file of the study in `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_,
+click on "File" -> "Export" -> "To Microsoft Excel", select "Peptide Groups" from the drop down menu for level 1 and click on "Export".
+Open the resulting file in Microsoft Excel and save as a .CSV file with the name ``PeptideGroups``.
 
 For a workflow in ``directDIA`` mode using `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland),
 a BGSfasta version of the fasta file is required. This BGSfasta version can be obtained by loading the fasta file with the proteome sequences in `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
