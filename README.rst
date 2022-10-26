@@ -53,7 +53,7 @@ Dependencies
 Name                Version                Source
 =================== ====================== ============
 PowerShell 7        7.2.4                  https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.2#installing-the-msi-package (Windows operating system has PowerShell 5.1 as default, however PowerShell 7.2 (or higher) is required alongside the default, so that additional functions can be accessed. The whole pipeline runs on 7.2 or up.)
-Python              3.8.8 (or higher)      https://www.anaconda.com/ (Including argparse, numpy, pandas, statsmodels.api, matplotlib.pyplot, Biopython. Add location of python.exe to PATH variable.)
+Python              3.8.8 (or higher)      https://www.anaconda.com/ (Including numpy==1.20.1, pandas==1.2.4, statsmodels==0.12.2, matplotlib==3.3.4, Biopython==1.78. Add location of python.exe to PATH variable.)
 Spectronaut         16 (16.2.220903.53000) https://biognosys.com/software/spectronaut/ (Commercially available. Add location of spectronaut.exe to PATH variable.)
 DIA-NN              1.8                    https://github.com/vdemichev/DiaNN (Open source.)
 Proteome Discoverer 2.4.1.15               https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html (Commercially available. Not actually part of the pipeline, since no command line tool is available.)
@@ -96,10 +96,10 @@ Specific input data
 All workflows in ``DIA`` and ``directDIA`` mode can be initialised from .RAW files (Thermo Fisher Scientific instrument specific - please open an issue if another type is required)
 using either `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
 or `DIA-NN <https://github.com/vdemichev/DiaNN>`_ (open source; `Demichev et al., 2019 <https://www.nature.com/articles/s41592-019-0638-x>`_).
-Any workflow in ``DDA`` mode can be initialised from the ``PeptideGroups.csv`` output file of `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ (Thermo Fisher Scientific, Waltham, MA, USA)
+Any workflow in ``DDA`` mode can be initialised from the ``PeptideGroups.csv`` output file of `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ (Thermo Fisher Scientific, Waltham, MA, USA).
 How to get the ``PeptideGroups.csv`` file with `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ results:
 Open the .PDRESULTS file of the study in `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_,
-click on "File" -> "Export" -> "To Microsoft Excel", select "Peptide Groups" from the drop down menu for level 1 and click on "Export".
+click on "File" -> "Export" -> "To Microsoft Excel", select "Peptide Groups" from the drop-down menu for level 1 and click on "Export".
 Open the resulting file in Microsoft Excel and save as a .CSV file with the name ``PeptideGroups``.
 
 For a workflow in ``directDIA`` mode using `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland),
