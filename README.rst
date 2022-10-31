@@ -68,9 +68,9 @@ Usage
 
 The ``autoprot.ps1`` script can be executed in PowerShell 7 (when added to the PATH variable) as follows:
 
-::
-
-    autoprot.ps1 [args]
+```
+autoprot.ps1 [args]
+```
 
 To access the autoprot help from the command line in PowerShell 7:
 
@@ -78,7 +78,7 @@ To access the autoprot help from the command line in PowerShell 7:
 
     Get-Help autoprot.ps1 -Full
 
-When the ``autoprot.ps1`` script is located on a drive with restricted access, e.g. a network drive and is cannot be executed, the following command can provide access to execute the script:
+When the ``autoprot.ps1`` script is located on a drive with restricted access, e.g. a network drive and cannot be executed, the following command can provide access to execute the script:
 
 ::
 
