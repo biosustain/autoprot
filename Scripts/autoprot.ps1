@@ -62,13 +62,15 @@
 
 #>
 
-param(
+Param(
+    [switch] $osDIA,
     [Parameter(Mandatory=$true)][string] $mode,
     [Parameter(Mandatory=$true)][string] $approach,
     [Parameter(Mandatory=$true)][string] $InputDir,
     [Parameter(Mandatory=$true)][string] $ExpName,
     [Parameter(Mandatory=$true)][string] $fasta,
     [Parameter(Mandatory=$true)][string] $totalProt,
+    [string] $DDAresultsFile,
     [string] $SpecLib,
     [string] $BGSfasta,
     [string] $ISconc
@@ -81,11 +83,14 @@ if ($mode -ne "DDA" -and $mode -ne "DIA" -and $mode -ne "directDIA") {
 if ($approach -ne "label" -and $approach -ne "unlabel" -and $approach -ne "free") {
     Write-Error -Message "-approach must be either `"label`", `"unlabel`" or `"free`""
 }
+if ($mode -eq "DDA") {
+    if (!$DDAresultsFile) {Write-Error -Message "File with Proteome Discoverer Peptide Groups results is required"}
+}
 if ($mode -eq "DIA") {
     if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
 }
 if ($mode -eq "directDIA") {
-    if (!$BGSfasta -or $BGSfasta -notmatch ".bgsfasta") {Write-Error -Message "File with fasta in BGSfasta format required"}
+    if (!$BGSfasta -or $BGSfasta -notmatch ".bgsfasta") {Write-Error -Message "File with fasta in BGSfasta format is required"}
 }
 if ($approach -eq "label" -or $approach -eq "unlabel") {
     if (!$ISconc) {Write-Error -Message "File with IS concentrations is required"}
@@ -100,41 +105,95 @@ $quantification = "$PSScriptRoot\Quantification"
 New-Item -ItemType Directory -Path $OutputDir | Out-Null
 New-Item -ItemType Directory -Path $intermediate | Out-Null
 
-## DIA analysis using Spectronaut
-if ($mode -eq "DIA" -or $mode -eq "directDIA") {
-    $fileType = ".*\.raw"
-    if ($mode -eq "DIA") {
-        $settings = "$DIAanalysis\DIA_settings.prop"
-        $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
-    }
-    elseif ($mode -eq "directDIA") {
-        $settings = "$DIAanalysis\directDIA_settings.prop"
-        $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
-    }
+## Conversion of FASTA file to contain only UniProt IDs in the headers
+$fastaName = Split-Path -Path $fasta -LeafBase
+& "$conversions\fasta_conversion_onlyIDs.ps1" -InputFilePath $fasta -fastaName $fastaName -OutputDirPath $intermediate
+$fastaIDs = Join-Path $intermediate ($fastaName + "_onlyIDs.fasta")
 
-    Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
-    $SNoutputDir = (Get-ChildItem -Path $intermediate -Filter ("*" + $ExpName) -Recurse -Directory).Fullname
-    $SNreport = Join-Path $intermediate ($ExpName + "_SNreport.tsv")
-    Copy-Item -Path (Join-Path $SNoutputDir ($ExpName + "_Report_pipeline_report (Normal).xls")) -Destination $SNreport
-    $samples = Import-Csv $SNreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
-    if ($approach -eq "free") {$INreport = $SNreport}
+if ($osDIA) {
+    ## DIA analysis using DIA-NN
+    if ($mode -eq "DIA" -or $mode -eq "directDIA") {
+        $DIANNoutputDir = "$intermediate\DIANN_output"
+        New-Item -ItemType Directory -Path $DIANNoutputDir | Out-Null
+
+        if ($mode -eq "DIA") {
+            if ($approach -eq "label") {
+                $settings = "$DIAanalysis\DIANN_settings_arg6lys6.cfg"
+            }
+            else {
+                $settings = "$DIAanalysis\DIANN_settings.cfg"
+            }
+            $DIANNargsList = "--dir $InputDir --lib $SpecLib --out $DIANNoutputDir\report.tsv --fasta $fasta --cfg $settings"
+        }
+        elseif ($mode -eq "directDIA") {
+            if ($approach -eq "label") {
+                $SpecLibSettings = "$DIAanalysis\DIANN_settings_SpecLib_arg6lys6.cfg"
+                $SpecLibName = $ExpName + "_SpectralLibrary"
+                $SpecLibargsList = "--out $DIANNoutputDir\SpecLib_report.tsv --out-lib $DIANNoutputDir\$SpecLibname.tsv --fasta $fasta --cfg $SpecLibSettings"
+                Start-Process -FilePath diann -ArgumentList $SpecLibargsList -Wait
+                $SpecLib = Join-Path $DIANNoutputDir ($SpecLibName + ".predicted.speclib")
+                $settings = "$DIAanalysis\DIANN_settings_arg6lys6.cfg"
+                $DIANNargsList = "--dir $InputDir --lib $SpecLib --out $DIANNoutputDir\report.tsv --fasta $fasta --cfg $settings"
+            }
+            else {
+                $SpecLib = Join-Path $DIANNoutputDir ($ExpName + "_SpectralLibrary.tsv")
+                $settings = "$DIAanalysis\DIANN_directDIA_settings.cfg"
+                $DIANNargsList = "--dir $InputDir --out $DIANNoutputDir\report.tsv --out-lib $SpecLib --fasta $fasta --cfg $settings"
+            }
+        }
+
+        Start-Process -FilePath diann -ArgumentList $DIANNargsList -Wait
+        & "$conversions\DIANNconversion.ps1" -InputFilePath "$DIANNoutputDir\report.tsv" -name $ExpName -OutputDirPath $intermediate
+        $DIANNreport = Join-Path $intermediate ($ExpName + "_DIANNreport.tsv")
+        $samples = Import-Csv $DIANNreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
+        if ($approach -eq "unlabel" -or $approach -eq "free") {$INreport = $DIANNreport}
+    }
+}
+else {
+    ## DIA analysis using Spectronaut
+    if ($mode -eq "DIA" -or $mode -eq "directDIA") {
+        $fileType = ".*\.raw"
+        if ($mode -eq "DIA") {
+            $settings = "$DIAanalysis\DIA_settings.prop"
+            $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
+        }
+        elseif ($mode -eq "directDIA") {
+            if ($approach -eq "label") {
+                $settings = "$DIAanalysis\directDIA_settings_arg6lys6.prop"
+                $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
+            }
+            else {
+                $settings = "$DIAanalysis\directDIA_settings.prop"
+                $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
+            }
+        }
+
+        Start-Process -FilePath spectronaut -ArgumentList $SNargsList -Wait
+        $SNoutputDir = (Get-ChildItem -Path $intermediate -Filter ("*" + $ExpName) -Recurse -Directory).Fullname
+        $SNreport = Join-Path $intermediate ($ExpName + "_SNreport.tsv")
+        Copy-Item -Path (Join-Path $SNoutputDir ($ExpName + "_Report_pipeline_report (Normal).xls")) -Destination $SNreport
+        $samples = Import-Csv $SNreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
+        if ($approach -eq "unlabel" -or $approach -eq "free") {$INreport = $SNreport}
+    }
 }
 
-## DIA analysis using DIA-NN
-
-
-## Conversion of DDA results in PeptideGroups (.CSV) format
+## Conversion of DDA results in PeptideGroups (.CSV)
 if ($mode -eq "DDA") {
-    & "$conversions\DDAconversion.ps1" -InputFilePath $DDA -name $ExpName -OutputDirPath $intermediate
+    & "$conversions\DDAconversion.ps1" -InputFilePath $DDAresultsFile -name $ExpName -OutputDirPath $intermediate
     $PDreport = Join-Path $intermediate ($ExpName + "_PDreport.tsv")
     $samples = Import-Csv $PDreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
-    if ($approach -eq "free") {$INreport = $PDreport}
+    if ($approach -eq "unlabel" -or $approach -eq "free") {$INreport = $PDreport}
 }
 
 ## IS extraction for label approach
 if ($approach -eq "label") {
     if ($mode -eq "DIA" -or $mode -eq "directDIA") {
-        $report = $SNreport
+        if ($osDIA) {
+            $report = $DIANNreport
+        }
+        else {
+            $report = $SNreport
+        }
     }
     elseif ($mode -eq "DDA") {
         $report = $PDreport
@@ -152,7 +211,7 @@ $methods = "top","all","iBAQ","APEX","NSAF","LFAQ","xTop"
 ## using aLFQ - R package
 & "$conversions\Report_to_OpenSWATH.ps1" -InputFilePath $INreport -name $ExpName -OutputDirPath $intermediate
 $aLFQrscript = "$normalisation\PeptoProtInference.R"
-$aLFQargsList = "$aLFQrscript $intermediate $ExpName $fasta"
+$aLFQargsList = "$aLFQrscript $intermediate $ExpName $fastaIDs"
 Start-Process -FilePath Rscript -ArgumentList $aLFQargsList -Wait
 
 ## using xTop - Python package
@@ -173,14 +232,14 @@ $LFAQexe = $env:Path -split ";" | Where-Object {$_ -match "LFAQ"}
 $randomConcFile = "$normalisation\randomConcFile.csv"
 foreach ($sam in $samples) {
     $samFile = Join-Path $LFAQintermediate ($ExpName + "_" + $sam + ".csv")
-    $LFAQargsList = "$LFAQPYscript $samFile $fasta $LFAQintermediate `"$LFAQexe`" --IdentificationFileType `"PeakView`" --IdentifierOfStandardProtein `"P`" --StandardProteinsFilePath $randomConcFile"
+    $LFAQargsList = "$LFAQPYscript $samFile $fastaIDs $LFAQintermediate `"$LFAQexe`" --IdentificationFileType `"PeakView`" --IdentifierOfStandardProtein `"P`" --StandardProteinsFilePath $randomConcFile"
     Start-Process -FilePath python -ArgumentList $LFAQargsList -Wait
     Rename-Item -Path "$LFAQintermediate\ProteinResultsExperimentOnlyOne.txt" -NewName ("ProteinResults_" + $sam + ".txt")
 }
 & "$conversions\convert_output_LFAQ.ps1" -InputFilesPath $LFAQintermediate -name $ExpName -samples $samples
 Copy-Item -Path (Join-Path $LFAQintermediate ($ExpName + "_prot_int_LFAQ.csv")) -Destination (Join-Path $intermediate ($ExpName + "_prot_int_LFAQ.csv"))
 
-## Absolute quantification using label or label-free approach
+## Absolute quantification using label, unlabelled, or standard-free approach
 $AQPYscript = "$quantification\AbsQuant.py"
 if ($approach -eq "label") {
     $AQargsList = "$AQPYscript --label `"label`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sint $ISreport --Sconc $ISconc"
@@ -189,7 +248,7 @@ elseif ($approach -eq "unlabel") {
     $AQargsList = "$AQPYscript --label `"unlabel`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --Sconc $ISconc"
 }
 elseif ($approach -eq "free") {
-    $AQargsList = "$AQPYscript --label `"free`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --fasta $fasta"
+    $AQargsList = "$AQPYscript --label `"free`" --name $ExpName --inDir $intermediate --sam $samples --met $methods --tot $totalProt --fasta $fastaIDs"
 }
 Start-Process -FilePath python -ArgumentList $AQargsList -Wait
 $AQoutputDir = "$intermediate\Absolute_quantification"

@@ -57,26 +57,27 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
         prot_labconc = intensities[protid].to_frame()
         prot_labconc.columns = ["ProteinName"]
 
+    intensities.rename(columns={protid : "ProteinName"}, inplace=True)
     for id in sample_ids:
-        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
+        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), ["ProteinName",id]]
         ISprotconc = stan_conc[["ProteinName","protconc_"+id]].copy().dropna()
 
     # labelled absolute quantification
         xdata, ydata = [], []
         for prot in ISprotconc.ProteinName.unique():
-            if prot in sample[protid].tolist():
-                xdata.append(sample.loc[(sample[protid] == prot), id].values[0])
+            if prot in sample["ProteinName"].tolist():
+                xdata.append(sample.loc[(sample["ProteinName"] == prot), id].values[0])
                 ydata.append(ISprotconc.loc[(ISprotconc.ProteinName == prot), "protconc_"+id].values[0])
 
     # linear regression using standard proteins (QconCATs or AQUA peptides)
         xdata, ydata = np.log10(xdata), np.log10(ydata)
         res = sm.OLS(ydata,sm.add_constant(xdata)).fit()
-        for prot in sample[protid].tolist():
+        for prot in sample["ProteinName"].tolist():
             if prot in ISprotconc.ProteinName.unique():
-                prot_labconc.loc[(prot_labconc[protid] == prot), "sample_conc(fmol/µg)_"+id] = ISprotconc.loc[(ISprotconc.ProteinName == prot), "protconc_"+id].values[0]
+                prot_labconc.loc[(prot_labconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = ISprotconc.loc[(ISprotconc.ProteinName == prot), "protconc_"+id].values[0]
             else:
-                sample_int = sample.loc[(sample[protid] == prot), id]
-                prot_labconc.loc[(prot_labconc[protid] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
+                sample_int = sample.loc[(sample["ProteinName"] == prot), id]
+                prot_labconc.loc[(prot_labconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
 
         points = np.array([xdata.min()-0.1*xdata.min(),xdata.max()+0.1*xdata.max()])
         plt.clf()
@@ -98,7 +99,7 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 
     return prot_labconc
 
-def get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
+def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
     remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
@@ -125,25 +126,26 @@ def get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc
         prot_unlabconc = intensities[protid].to_frame()
         prot_unlabconc.columns = ["ProteinName"]
 
+    intensities.rename(columns={protid : "ProteinName"}, inplace=True)
     for id in sample_ids:
-        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
+        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), ["ProteinName",id]]
 
     # labelled absolute quantification
         xdata, ydata = [], []
         for prot in stan_conc.ProteinName.unique():
-            if prot in sample[protid].tolist():
-                xdata.append(sample.loc[(sample[protid] == prot), id].values[0])
+            if prot in sample["ProteinName"].tolist():
+                xdata.append(sample.loc[(sample["ProteinName"] == prot), id].values[0])
                 ydata.append(stan_conc.loc[(stan_conc.ProteinName == prot), "Concentration"].values[0])
 
     # linear regression using standard proteins (QconCATs or AQUA peptides)
         xdata, ydata = np.log10(xdata), np.log10(ydata)
         res = sm.OLS(ydata,sm.add_constant(xdata)).fit()
-        for prot in sample[protid].tolist():
+        for prot in sample["ProteinName"].tolist():
             if prot in stan_conc.ProteinName.unique():
-                prot_unlabconc.loc[(prot_unlabconc[protid] == prot), "sample_conc(fmol/µg)_"+id] = stan_conc.loc[(stan_conc.ProteinName == prot), "Concentration"].values[0]
+                prot_unlabconc.loc[(prot_unlabconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = stan_conc.loc[(stan_conc.ProteinName == prot), "Concentration"].values[0]
             else:
-                sample_int = sample.loc[(sample[protid] == prot), id]
-                prot_unlabconc.loc[(prot_unlabconc[protid] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
+                sample_int = sample.loc[(sample["ProteinName"] == prot), id]
+                prot_unlabconc.loc[(prot_unlabconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
 
         points = np.array([xdata.min()-0.1*xdata.min(),xdata.max()+0.1*xdata.max()])
         plt.clf()
@@ -192,18 +194,19 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
         prot_freeconc = intensities[protid].to_frame()
         prot_freeconc.columns = ["ProteinName"]
 
+    intensities.rename(columns={protid : "ProteinName"}, inplace=True)
     for id in sample_ids:
-        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), [protid,id]]
+        sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), ["ProteinName",id]]
 
     # standardfree absolute quantification using total protein approach
         tot_mass = 0
-        for prot in sample[protid].tolist():
+        for prot in sample["ProteinName"].tolist():
             MW = ProteinAnalysis(str(prot_seq[prot].seq)).molecular_weight()
-            p_int = sample.loc[sample[protid] == prot, id].values[0]
+            p_int = sample.loc[sample["ProteinName"] == prot, id].values[0]
             tot_mass += MW*p_int
-        for prot in sample[protid].tolist():
-            p_int = sample.loc[sample[protid] == prot, id].values[0]
-            prot_freeconc.loc[prot_freeconc[protid] == prot, "sample_conc(fmol/µg)_"+id] = p_int*(1e9/tot_mass)
+        for prot in sample["ProteinName"].tolist():
+            p_int = sample.loc[sample["ProteinName"] == prot, id].values[0]
+            prot_freeconc.loc[prot_freeconc["ProteinName"] == prot, "sample_conc(fmol/µg)_"+id] = p_int*(1e9/tot_mass)
 
     # calculate in vivo proteins concentrations
         TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]

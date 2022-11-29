@@ -5,7 +5,7 @@ $results = Import-Csv $InputFilePath -Delimiter "`t"
 $ISpep   = Import-Csv $ISpepFilePath -Delimiter ","
 $results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
 $results = $results | ForEach-Object {if ($_.aggr_Peak_Area) {$_.aggr_Peak_Area = $_.aggr_Peak_Area -replace ",","."} $_}
-$results = $results | Where-Object {($_.aggr_Peak_Area -ne 1) -and ($_.aggr_Peak_Area -ne "NaN")}
+$results = $results | Where-Object {($_.aggr_Peak_Area -ne 1) -and ($_.aggr_Peak_Area -ne "NaN") -and ($_.aggr_Peak_Area -ne 0)}
 $results = $results | Where-Object {[double] $_.m_score -lt 0.01}
 $results = $results | ForEach-Object {if ($_.m_score) {$_.m_score = $_.m_score -replace ",","."} $_}
 $objectTemp = New-Object -TypeName PSObject
