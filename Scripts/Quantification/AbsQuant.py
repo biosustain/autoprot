@@ -64,17 +64,17 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 
     # labelled absolute quantification
         xdata, ydata = [], []
-        for prot in ISprotconc.ProteinName.unique():
+        for prot in ISprotconc["ProteinName"].unique():
             if prot in sample["ProteinName"].tolist():
                 xdata.append(sample.loc[(sample["ProteinName"] == prot), id].values[0])
-                ydata.append(ISprotconc.loc[(ISprotconc.ProteinName == prot), "protconc_"+id].values[0])
+                ydata.append(ISprotconc.loc[(ISprotconc["ProteinName"] == prot), "protconc_"+id].values[0])
 
     # linear regression using standard proteins (QconCATs or AQUA peptides)
         xdata, ydata = np.log10(xdata), np.log10(ydata)
         res = sm.OLS(ydata,sm.add_constant(xdata)).fit()
         for prot in sample["ProteinName"].tolist():
             if prot in ISprotconc.ProteinName.unique():
-                prot_labconc.loc[(prot_labconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = ISprotconc.loc[(ISprotconc.ProteinName == prot), "protconc_"+id].values[0]
+                prot_labconc.loc[(prot_labconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = ISprotconc.loc[(ISprotconc["ProteinName"] == prot), "protconc_"+id].values[0]
             else:
                 sample_int = sample.loc[(sample["ProteinName"] == prot), id]
                 prot_labconc.loc[(prot_labconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
@@ -130,19 +130,19 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,to
     for id in sample_ids:
         sample = intensities.loc[(intensities[id] != np.inf) & (intensities[id] != np.nan) & (intensities[id] > 0), ["ProteinName",id]]
 
-    # labelled absolute quantification
+    # unlabelled absolute quantification
         xdata, ydata = [], []
-        for prot in stan_conc.ProteinName.unique():
+        for prot in stan_conc["ProteinName"].unique():
             if prot in sample["ProteinName"].tolist():
                 xdata.append(sample.loc[(sample["ProteinName"] == prot), id].values[0])
-                ydata.append(stan_conc.loc[(stan_conc.ProteinName == prot), "Concentration"].values[0])
+                ydata.append(stan_conc.loc[(stan_conc["ProteinName"] == prot), "Concentration"].values[0])
 
-    # linear regression using standard proteins (QconCATs or AQUA peptides)
+    # linear regression using standard proteins (UPS2)
         xdata, ydata = np.log10(xdata), np.log10(ydata)
         res = sm.OLS(ydata,sm.add_constant(xdata)).fit()
         for prot in sample["ProteinName"].tolist():
-            if prot in stan_conc.ProteinName.unique():
-                prot_unlabconc.loc[(prot_unlabconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = stan_conc.loc[(stan_conc.ProteinName == prot), "Concentration"].values[0]
+            if prot in stan_conc["ProteinName"].unique():
+                prot_unlabconc.loc[(prot_unlabconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = stan_conc.loc[(stan_conc["ProteinName"] == prot), "Concentration"].values[0]
             else:
                 sample_int = sample.loc[(sample["ProteinName"] == prot), id]
                 prot_unlabconc.loc[(prot_unlabconc["ProteinName"] == prot), "sample_conc(fmol/µg)_"+id] = 10**(res.params[0]+np.log10(sample_int)*res.params[1])
@@ -238,7 +238,7 @@ def main():
     if not os.path.exists(resultspath):
         os.makedirs(resultspath)
     total_protein = pd.read_csv(os.path.join(workpath,args.total_protein), sep=",", header=0) # µg/cell
-    # determine sample names and other variables
+    # determine sample names and methods
     sample_ids = args.samples
     methods = args.methods
 
