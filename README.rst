@@ -23,7 +23,7 @@ Raw data from labelled, label-free and standard-free approaches can be analysed 
 The normalisation of peptide intensities into protein intensities is performed with seven different algorithms to identify the optimal algorithm for the current experiment.
 The incorporated algorithms are Top3 (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
 Topall (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
-iBAQ (`Schwanh\"ausser et al., 2011 <https://www.nature.com/articles/nature10098>`_),
+iBAQ (`Schwanhausser et al., 2011 <https://www.nature.com/articles/nature10098>`_),
 APEX (`Lu et al., 2007 <https://www.nature.com/articles/nbt1270>`_),
 NSAF (`Zybailov et al., 2006 <https://pubs.acs.org/doi/full/10.1021/pr060161n>`_),
 LFAQ (`Chang et al., 2019 <https://pubs.acs.org/doi/full/10.1021/acs.analchem.8b03267>`_),
