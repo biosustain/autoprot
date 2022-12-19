@@ -21,7 +21,13 @@ The autoprot pipeline allows for absolute quantification of proteins from raw ma
 The pipeline covers data analysis from both DIA and DDA methods, where a fully open-source option is avalaible for DIA methods.
 Raw data from labelled, label-free and standard-free approaches can be analysed with the pipeline.
 The normalisation of peptide intensities into protein intensities is performed with seven different algorithms to identify the optimal algorithm for the current experiment.
-The incorporated algorithms are Top3, Topall, iBAQ, APEX, NSAF, LFAQ, and xTop. 
+The incorporated algorithms are Top3 (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
+Topall (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
+iBAQ (`Schwanh\"ausser et al., 2011 <https://www.nature.com/articles/nature10098>`_),
+APEX (`Lu et al., 2007 <https://www.nature.com/articles/nbt1270>`_),
+NSAF (`Zybailov et al., 2006 <https://pubs.acs.org/doi/full/10.1021/pr060161n>`_),
+LFAQ (`Chang et al., 2019 <https://pubs.acs.org/doi/full/10.1021/acs.analchem.8b03267>`_),
+and xTop (`Mori et al., 2021 <https://www.embopress.org/doi/full/10.15252/msb.20209536>`_).
 
 Install
 =======
@@ -86,6 +92,7 @@ When the ``autoprot.ps1`` script is located on a drive with restricted access, e
 
 The available arguments are:
 
+-osDIA       [flag] enables the open-source option for DIA analysis, which uses DIA-NN instead of Spectronaut.
 -mode        [string] **mandatory** specify the acquisition mode as "DDA", "DIA" or "directDIA".
 -approach    [string] **mandatory** specify the quantification approach as "label", "unlabel" or "free".
 -InputDir    [directory] **mandatory** specify the input directory containing all input files with raw MS spectra. The output directory will be located in the input directory after the run.
@@ -93,7 +100,7 @@ The available arguments are:
 -fasta       [file] **mandatory** specify the FASTA file with the proteome sequences.
 -totalProt   [file] **mandatory** specify the file with total protein amount for each sample. Optional to include the cell volume to be used for each sample.
 -SpecLib     [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.
--BGSfasta    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (not open source).
+-BGSfasta    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (commercial).
 -ISconc      [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
 
 Specific input data
@@ -112,7 +119,7 @@ Open the resulting file in Microsoft Excel and save as a .CSV file with the name
 
 For a workflow in ``directDIA`` mode using `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland),
 a BGSfasta version of the fasta file is required. This BGSfasta version can be obtained by loading the fasta file with the proteome sequences in `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
-as a protein database. Then, the BGSfasta version of the fasta file can be found in the folder ``$HOME\Databases\Spectronaut\``.
+as a protein database. Then, the BGSfasta version of the fasta file should be in the folder ``$HOME\Databases\Spectronaut\``.
 
 The autoprot pipeline has two custom input files which are described below.
 
@@ -134,7 +141,7 @@ sample2 <float> <float>
 Internal standard concentration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For the ``labelled`` approach, the table with the concentration for each internal standard should be peptide-based (for example AQUA or QconCAT peptides) with the following headers:
+For the ``label`` approach, the table with the concentration for each internal standard should be peptide-based (for example AQUA or QconCAT peptides) with the following headers:
 ``FullPeptideName`` [string] with the peptide sequence, ``ProteinName`` [string] with the UniProt identifier of the corresponding protein (should be identical to the identifiers in the fasta file with the proteome sequences),
 ``Concentration`` [float] with the spiked-in concentration of each internal standard peptide into the sample in fmol/µg whole cell lysate (total protein extracted).
 An example file for the peptide-based internal standard concentration table can be found in ``Examples\Input\ISconc_peptides_example.csv``.
@@ -181,7 +188,19 @@ Intermediate files
 ^^^^^^^^^^^^^^^^^^
 
 All intermediate output files of the autoprot pipeline will be located in ``intermediate_results`` in the output directory.
-In particular interest, the linear regression plots of the proteome absolute quantification for the ``labelled`` or ``unlabel`` approach will be located in ``intermediate_results\Absolute_quantification\LR_plots``.
+Of particular interest, the linear regression plots of the proteome absolute quantification for the ``labelled`` or ``unlabel`` approach will be located in ``intermediate_results\Absolute_quantification\LR_plots``.
+
+Analysis settings
+^^^^^^^^^^^^^^^^^^^^^
+
+Currently, only 13C(6) labelling of arginine (Arg6) and lysine (Lys6) residues is allowed for the ``label`` approach, which are incorporated into the DIA analysis settings of the ``directDIA`` mode.
+However, the ``label`` approach is peptide-based, thus both methods using AQUA peptides or QconCAT proteins are supported.
+The ``unlabel`` approach is protein-based and allows for any protein to be used as internal standard, e.g. UPS2 protein kit. 
+
+The DIA analysis settings for both Spectronaut and DIA-NN include quantification on MS2 level.
+Specifically for the ``directDIA`` mode, the DIA analysis settings include the Trypsin/P cleavage rule (digestion with Trypsin/Lys-C mix) and the following modifications: Carbamidomehtyl (C), Acetyl (Protein N-term), and Oxidation (M).
+The exact settings can be found in the corresponding DIA analysis settings file in ``Scripts\DIA_analysis``.
+DIA-NN uses config files which can be viewed using any text editor, while Spectronaut uses property files which can be viewed by importing the file into Spectronaut in the Settings tab.
 
 Copyright
 =========

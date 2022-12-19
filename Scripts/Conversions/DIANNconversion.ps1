@@ -1,5 +1,5 @@
 param([string] $InputFilePath, [string] $name, [string] $OutputDirPath)
-$OutputFilePath = Join-Path $OutputDirPath ($name + "DIANNreport.tsv")
+$OutputFilePath = Join-Path $OutputDirPath ($name + "_DIANNreport.tsv")
 $results = Import-Csv $InputFilePath -Delimiter "`t"
 
 $results = $results | ForEach-Object {

@@ -89,7 +89,7 @@ if ($mode -eq "DDA") {
 if ($mode -eq "DIA") {
     if (!$SpecLib) {Write-Error -Message "File with spectral library is required"}
 }
-if ($mode -eq "directDIA") {
+if (!$osDIA -and $mode -eq "directDIA") {
     if (!$BGSfasta -or $BGSfasta -notmatch ".bgsfasta") {Write-Error -Message "File with fasta in BGSfasta format is required"}
 }
 if ($approach -eq "label" -or $approach -eq "unlabel") {
@@ -154,16 +154,16 @@ else {
     if ($mode -eq "DIA" -or $mode -eq "directDIA") {
         $fileType = ".*\.raw"
         if ($mode -eq "DIA") {
-            $settings = "$DIAanalysis\DIA_settings.prop"
+            $settings = "$DIAanalysis\SN_DIA_settings.prop"
             $SNargsList = "-d $InputDir -a $SpecLib -s $settings -o $intermediate -n $ExpName -f $fileType"
         }
         elseif ($mode -eq "directDIA") {
             if ($approach -eq "label") {
-                $settings = "$DIAanalysis\directDIA_settings_arg6lys6.prop"
+                $settings = "$DIAanalysis\SN_directDIA_settings_arg6lys6.prop"
                 $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
             }
             else {
-                $settings = "$DIAanalysis\directDIA_settings.prop"
+                $settings = "$DIAanalysis\SN_directDIA_settings.prop"
                 $SNargsList = "-direct -d $InputDir -fasta $BGSfasta -s $settings -o $intermediate -n $ExpName -f $fileType"
             }
         }
