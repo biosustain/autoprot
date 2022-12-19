@@ -191,7 +191,7 @@ All intermediate output files of the autoprot pipeline will be located in ``inte
 Of particular interest, the linear regression plots of the proteome absolute quantification for the ``labelled`` or ``unlabel`` approach will be located in ``intermediate_results\Absolute_quantification\LR_plots``.
 
 Analysis settings
-^^^^^^^^^^^^^^^^^^^^^
+=================
 
 Currently, only 13C(6) labelling of arginine (Arg6) and lysine (Lys6) residues is allowed for the ``label`` approach, which are incorporated into the DIA analysis settings of the ``directDIA`` mode.
 However, the ``label`` approach is peptide-based, thus both methods using AQUA peptides or QconCAT proteins are supported.
