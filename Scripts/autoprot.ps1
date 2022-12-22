@@ -229,10 +229,12 @@ New-Item -ItemType Directory -Path $LFAQintermediate | Out-Null
 & "$conversions\convert_input_LFAQ.ps1" -InputFilePath $INreport -name $ExpName -samples $samples -OutputDirPath $LFAQintermediate
 $LFAQPYscript = "$normalisation\lfaq.py"
 $LFAQexe = $env:Path -split ";" | Where-Object {$_ -match "LFAQ"}
-$randomConcFile = "$normalisation\randomConcFile.csv"
+& "$normalisation\lfaqConcFileGeneration.ps1" -InputFilePath $INreport -OutputDirPath $LFAQintermediate
+$randomConcFile = "$LFAQintermediate\randomConcFile.csv"
+$identifier = Import-Csv $randomConcFile -Delimiter "`t" | Select-Object -ExpandProperty "Protein Id" -Unique | ForEach-Object {$_[0]} | Group-Object | Sort-Object Count -descending | Select-Object -ExpandProperty Name -First 1
 foreach ($sam in $samples) {
     $samFile = Join-Path $LFAQintermediate ($ExpName + "_" + $sam + ".csv")
-    $LFAQargsList = "$LFAQPYscript $samFile $fastaIDs $LFAQintermediate `"$LFAQexe`" --IdentificationFileType `"PeakView`" --IdentifierOfStandardProtein `"P`" --StandardProteinsFilePath $randomConcFile"
+    $LFAQargsList = "$LFAQPYscript $samFile $fastaIDs $LFAQintermediate `"$LFAQexe`" --IdentificationFileType `"PeakView`" --IdentifierOfStandardProtein `"$identifier`" --StandardProteinsFilePath $randomConcFile"
     Start-Process -FilePath python -ArgumentList $LFAQargsList -Wait
     Rename-Item -Path "$LFAQintermediate\ProteinResultsExperimentOnlyOne.txt" -NewName ("ProteinResults_" + $sam + ".txt")
 }
