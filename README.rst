@@ -205,5 +205,5 @@ DIA-NN uses config files which can be viewed using any text editor, while Spectr
 Copyright
 =========
 
-* Copyright (c) 2022, Novo Nordisk Foundation Center for Biosustainability, Technical University of Denmark.
+* Copyright (c) 2023, Novo Nordisk Foundation Center for Biosustainability, Technical University of Denmark.
 * Free software distributed under the `GNU General Public License 3.0 <https://www.gnu.org/licenses/>`_

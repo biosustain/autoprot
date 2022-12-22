@@ -201,7 +201,13 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
     # standardfree absolute quantification using total protein approach
         tot_mass = 0
         for prot in sample["ProteinName"].tolist():
-            MW = ProteinAnalysis(str(prot_seq[prot].seq)).molecular_weight()
+            seq = str(prot_seq[prot].seq)
+            if "X" in seq:
+                x_count = seq.count("X")
+                seq = seq.replace("X","")
+            else:
+                x_count = 0
+            MW = ProteinAnalysis(seq).molecular_weight()+x_count*110 # 110 g/mol is the average MW of an amino acid residue in a protein
             p_int = sample.loc[sample["ProteinName"] == prot, id].values[0]
             tot_mass += MW*p_int
         for prot in sample["ProteinName"].tolist():
