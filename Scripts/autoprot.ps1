@@ -179,9 +179,9 @@ else {
 
 ## Conversion of DDA results in PeptideGroups (.CSV)
 if ($mode -eq "DDA") {
-    & "$conversions\DDAconversion.ps1" -InputFilePath $DDAresultsFile -name $ExpName -OutputDirPath $intermediate
+    $samples = Import-Csv $totalProt -Delimiter "," | Select-Object -ExpandProperty Sample -Unique
+    & "$conversions\DDAconversion.ps1" -InputFilePath $DDAresultsFile -name $ExpName -samples $samples -OutputDirPath $intermediate
     $PDreport = Join-Path $intermediate ($ExpName + "_PDreport.tsv")
-    $samples = Import-Csv $PDreport -Delimiter "`t" | Select-Object -ExpandProperty run_id -Unique
     if ($approach -eq "unlabel" -or $approach -eq "free") {$INreport = $PDreport}
 }
 

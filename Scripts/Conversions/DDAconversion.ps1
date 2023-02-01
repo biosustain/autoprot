@@ -1,8 +1,8 @@
-param([string] $InputFilePath, [string] $name, [string] $OutputDirPath)
+param([string] $InputFilePath, [string] $name, [string[]] $samples, [string] $OutputDirPath)
 $OutputFilePath = Join-Path $OutputDirPath ($name + "_PDreport.tsv")
 $results = Import-Csv $InputFilePath -Delimiter ","
-$samples = $results[0].psobject.Properties.Name -match "Abundances"
-foreach ($sam in $samples) {
+$OrgSamples = $results[0].psobject.Properties.Name -match "Abundances"
+foreach ($sam in $OrgSamples) {
     $res = $results | ForEach-Object {
         $seq = $_."Annotated Sequence"
         $seq = $seq.SubString($seq.IndexOf(".") + 1, $seq.LastIndexOf(".") - $seq.IndexOf(".") - 1)
@@ -17,7 +17,7 @@ foreach ($sam in $samples) {
             }
         }
         [PSCustomObject]@{
-            run_id                   = ("sample_" + ($samples.IndexOf($sam)+1))
+            run_id                   = $samples[$OrgSamples.IndexOf($sam)]
             ProteinName              = $_."Master Protein Accessions"
             FullPeptideName          = $seq
             Sequence                 = $seq
