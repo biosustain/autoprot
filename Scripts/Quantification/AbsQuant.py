@@ -30,17 +30,16 @@ def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
                 stan_conc.loc[(stan_conc.ProteinName == prot), "protconc_"+id] = sum(temp)/len(temp)
     return stan_conc
 
-def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
+def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein,cont_ids):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
-    remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
-
+    
     if m == "xTop":
         protid = "Protein ID"
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_labconc = intensities[protid].to_frame()
@@ -50,7 +49,7 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
@@ -99,17 +98,16 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
 
     return prot_labconc
 
-def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein):
+def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein,cont_ids):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
-    remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
-
+    
     if m == "xTop":
         protid = "Protein ID"
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_unlabconc = intensities[protid].to_frame()
@@ -119,7 +117,7 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,to
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
@@ -167,17 +165,16 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,to
 
     return prot_unlabconc
 
-def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
+def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,cont_ids):
     fullpath = os.path.join(workpath,exp+"_prot_int_"+m+".csv")
     intensities = pd.read_csv(fullpath, sep=",", header=0)
-    remove_ID = ["Biogno","","0","P00761","P02534","P04264","P07477","P13645","P35527","P35908","Q6IFZ6","Q7Z794"]
-
+    
     if m == "xTop":
         protid = "Protein ID"
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         prot_freeconc = intensities[protid].to_frame()
@@ -187,7 +184,7 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein):
         for prot in intensities[protid].tolist():
             if ";" in prot:
                 intensities = intensities[intensities[protid] != prot]
-            for id in remove_ID:
+            for id in cont_ids:
                 if prot == id:
                     intensities = intensities[intensities[protid] != prot]
         intensities = intensities.pivot_table("response_"+m,protid, "run_id").reset_index()
@@ -243,17 +240,25 @@ def main():
     resultspath = os.path.join(workpath,"Absolute_quantification")
     if not os.path.exists(resultspath):
         os.makedirs(resultspath)
-    total_protein = pd.read_csv(os.path.join(workpath,args.total_protein), sep=",", header=0) # µg/cell
+    total_protein = pd.read_csv(args.total_protein, sep=",", header=0) # µg/cell
     # determine sample names and methods
     sample_ids = args.samples
     methods = args.methods
+
+    # load contaminants
+    location = os.path.dirname(os.path.realpath(__file__))
+    cont_seq = SeqIO.index(os.path.join(location,"Contaminants_onlyIDs.fasta"), "fasta")
+    cont_ids = []
+    for id in cont_seq:
+        cont_ids.append(id)
+    cont_ids.append(["Biogno","","0"])
 
     if approach == "label":
         plotpath = os.path.join(resultspath,"LR_plots")
         if not os.path.exists(plotpath):
             os.makedirs(plotpath)
-        stan_int = pd.read_csv(os.path.join(workpath,args.standard_intensities), sep=",", header=0)
-        IS_conc = pd.read_csv(os.path.join(workpath,args.IS_concentrations), sep=",", header=0) # should be in fmol/µg
+        stan_int = pd.read_csv(args.standard_intensities, sep=",", header=0)
+        IS_conc = pd.read_csv(args.IS_concentrations, sep=",", header=0) # should be in fmol/µg
 
         # calculate standard endogenous protein concentrations per sample
         stan_conc = get_stan_prot_conc(stan_int,IS_conc,sample_ids)
@@ -262,7 +267,7 @@ def main():
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_labconc = get_invivo_prot_conc_label(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein)
+            prot_labconc = get_invivo_prot_conc_label(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,cont_ids)
         # export concentrations per method
             prot_labconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
@@ -270,20 +275,20 @@ def main():
         plotpath = os.path.join(resultspath,"LR_plots")
         if not os.path.exists(plotpath):
             os.makedirs(plotpath)
-        stan_conc = pd.read_csv(os.path.join(workpath,args.IS_concentrations), sep=",", header=0) # should be in fmol/µg
+        stan_conc = pd.read_csv(args.IS_concentrations, sep=",", header=0) # should be in fmol/µg
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_unlabelconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein)
+            prot_unlabelconc = get_invivo_prot_conc_unlabel(experiment_name,m,workpath,sample_ids,stan_conc,plotpath,total_protein,cont_ids)
         # export concentrations per method
             prot_unlabelconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
     elif approach == "free":
-        prot_seq = SeqIO.index(os.path.join(workpath,args.protein_sequences), "fasta")
+        prot_seq = SeqIO.index(args.protein_sequences, "fasta")
 
         # calculate all in vivo protein concentrations per sample
         for m in methods:
-            prot_freeconc = get_invivo_prot_conc_free(experiment_name,m,workpath,sample_ids,prot_seq,total_protein)
+            prot_freeconc = get_invivo_prot_conc_free(experiment_name,m,workpath,sample_ids,prot_seq,total_protein,cont_ids)
         # export concentrations per method
             prot_freeconc.to_csv(os.path.join(resultspath,experiment_name+"_prot_conc_"+m+".csv"), sep=',',index=False)
 
