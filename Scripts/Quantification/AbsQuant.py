@@ -12,22 +12,21 @@ def get_stan_prot_conc(stan_int,IS_conc,sample_ids):
     stan_conc = IS_conc[["FullPeptideName","ProteinName"]].copy()
 
     for id in sample_ids:
-        for pep in IS_conc.FullPeptideName.unique():
-            try:
-                IS_int = stan_int.loc[(stan_int.FullPeptideName == pep) & (stan_int.labelled == "yes"), id].values[0]
-                endo_int = stan_int.loc[(stan_int.FullPeptideName == pep) & (stan_int.labelled == "no"), id].values[0]
-            except KeyError and IndexError:
-                IS_int, endo_int = [],[]
-                stan_conc = stan_conc[stan_conc.FullPeptideName != pep]
-            if IS_int and endo_int:
-                    if IS_conc.loc[(IS_conc.FullPeptideName == pep), "Concentration"].values.size > 0:
-                        conc = IS_conc.loc[(IS_conc.FullPeptideName == pep), "Concentration"].values[0]
-                        stan_conc.loc[(stan_conc.FullPeptideName == pep), "pepconc_"+id] = (endo_int/IS_int)*conc
+        for pep in IS_conc["FullPeptideName"].unique():
+            IS_int = stan_int.loc[(stan_int["FullPeptideName"] == pep) & (stan_int["labelled"] == "yes"), id].dropna()
+            endo_int = stan_int.loc[(stan_int["FullPeptideName"] == pep) & (stan_int["labelled"] == "no"), id].dropna()
+            if IS_int.any() and endo_int.any():
+                if pep in IS_conc["FullPeptideName"].unique():
+                    ratio = endo_int.values[0]/IS_int.values[0]
+                    conc = IS_conc.loc[(IS_conc["FullPeptideName"] == pep), "Concentration"].values[0]
+                    stan_conc.loc[(stan_conc["FullPeptideName"] == pep), "pepconc_"+id] = ratio * conc
+            else:
+                stan_conc = stan_conc[stan_conc["FullPeptideName"] != pep]
 
-        for prot in stan_conc.ProteinName.unique():
-            temp = stan_conc.loc[(stan_conc.ProteinName == prot), "pepconc_"+id].dropna()
+        for prot in stan_conc["ProteinName"].unique():
+            temp = stan_conc.loc[(stan_conc["ProteinName"] == prot), "pepconc_"+id].dropna()
             if temp.any():
-                stan_conc.loc[(stan_conc.ProteinName == prot), "protconc_"+id] = sum(temp)/len(temp)
+                stan_conc.loc[(stan_conc["ProteinName"] == prot), "protconc_"+id] = sum(temp)/len(temp)
     return stan_conc
 
 def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,total_protein,cont_ids):
@@ -217,7 +216,7 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,c
             Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
         else:
             Vc = 3.9e-15 # L/cell
-        prot_freeconc["invivo_conc(mM)"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
+        prot_freeconc["invivo_conc(mM)_"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
 
     return prot_freeconc
 
