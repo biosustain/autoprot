@@ -44,7 +44,7 @@ The ``autoprot.ps1`` script and multiple other scripts or executables have to be
 While file paths can be added to the PATH variable through the `command line <https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-7.2>`_,
 on Windows one can also add to the PATH variable through the `graphical user interface <https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0>`_ (GUI).
 
-To test if the autoprot pipeline is set up properly for usage, the files in ``Examples\Input`` can be used for a test run with the following command:
+To test if the autoprot pipeline is set up properly, the files in ``Examples\Input`` can be used in combination with raw MS files (LINK) for a test run with the following command:
 
 ::
     
@@ -60,7 +60,7 @@ Name                Version                Source
 =================== ====================== ============
 PowerShell 7        7.2.4                  https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.2#installing-the-msi-package (Windows operating system has PowerShell 5.1 as default, however PowerShell 7.2 (or higher) is required alongside the default, so that additional functions can be accessed. The whole pipeline runs on 7.2 or up.)
 Python              3.8.8 (or higher)      https://www.anaconda.com/ (Including numpy==1.20.1, pandas==1.2.4, statsmodels==0.12.2, matplotlib==3.3.4, Biopython==1.78. Add location of python.exe to PATH variable.)
-Spectronaut         16 (16.2.220903.53000) https://biognosys.com/software/spectronaut/ (Commercially available. Add location of spectronaut.exe to PATH variable.)
+Spectronaut         17 (17.3.230224.55965) https://biognosys.com/software/spectronaut/ (Commercially available. Add location of spectronaut.exe to PATH variable.)
 DIA-NN              1.8                    https://github.com/vdemichev/DiaNN (Open source.)
 Proteome Discoverer 2.4.1.15               https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html (Commercially available. Not actually part of the pipeline, since no command line tool is available.)
 R (Rscript)         4.1.1 (or higher)      https://cran.r-project.org/bin/windows/base/ (Add location of rscript.exe to PATH variable.)
@@ -84,7 +84,7 @@ To access the autoprot help from the command line in PowerShell 7:
 
     Get-Help autoprot.ps1 -Full
 
-When the ``autoprot.ps1`` script is located on a drive with restricted access, e.g. a network drive and cannot be executed, the following command can provide access to execute the script:
+When the ``autoprot.ps1`` script is located on a drive with restricted access, e.g. a network drive, and cannot be executed, the following command can provide access to execute the script:
 
 ::
 
@@ -108,7 +108,7 @@ Specific input data
 
 Ensure that the FASTA file with the proteome sequences follows the official UniProt configuration for the headers. An example FASTA file can be found in ``Examples\Input\URF_2021_04_UP000000625_E_coli_83333.fasta``.
 
-All workflows in ``DIA`` and ``directDIA`` mode can be initialised from .RAW files (Thermo Fisher Scientific instrument specific - please open an issue if another type is required)
+All workflows in ``DIA`` and ``directDIA`` mode can be initialised from .RAW files (Thermo Fisher Scientific instrument specific - please open an issue if another type is required in combination with Spectronaut)
 using either `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
 or `DIA-NN <https://github.com/vdemichev/DiaNN>`_ (open source; `Demichev et al., 2019 <https://www.nature.com/articles/s41592-019-0638-x>`_).
 Any workflow in ``DDA`` mode can be initialised from the ``PeptideGroups.csv`` output file of `Proteome Discoverer <https://www.thermofisher.com/dk/en/home/industrial/mass-spectrometry/liquid-chromatography-mass-spectrometry-lc-ms/lc-ms-software/multi-omics-data-analysis/proteome-discoverer-software.html>`_ (Thermo Fisher Scientific, Waltham, MA, USA).
@@ -123,20 +123,19 @@ as a protein database. Then, the BGSfasta version of the fasta file should be in
 
 The autoprot pipeline has two custom input files which are described below.
 
-Total protein and cell volume
+Cellular protein density
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The table with total protein amount for each sample should have the following headers: ``Sample`` [string] with the name of each sample which should be the same as the names of the .RAW files,
-``TPA`` [float] with the total protein amount of each sample in µg/cell, ``Volume`` [float] **optional** column with specific cell volume of each sample in fL (1e-15 L).
-An example file for the total protein and cell volume table can be found in ``Examples\Input\totalProt_example.csv``.
+The table with cellular protein density for each sample should have the following headers: ``Sample`` [string] with the name of each sample which should be the same as the names of the .RAW files and
+``CPD`` [float] with the cellular protein density of each sample in g/L. An example file for the total protein and cell volume table can be found in ``Examples\Input\CPD_example.csv``.
 
-======= ======= =======
-Sample  TPA     Volume
-======= ======= =======
-sample1 <float> <float>
-sample2 <float> <float>
-...     ...     ...
-======= ======= =======
+======= =======
+Sample  CPD    
+======= =======
+sample1 <float>
+sample2 <float>
+...     ...    
+======= =======
 
 Internal standard concentration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -154,7 +153,7 @@ sequence2       UniProt ID2 <float>
 ...             ...         ...
 =============== =========== =============
 
-For the ``unlabel`` approach, the table with the concentration for each internal standard should be protein-based (for example UPS2 protein kit) with the following headers:
+For the ``unlabel`` approach, the table with the concentration for each internal standard should be protein-based (for example UPS2 protein mix) with the following headers:
 ``ProteinName`` [string] with the UniProt identifier of the corresponding protein (should be identical to the identifiers in the fasta file with the proteome sequences),
 ``Concentration`` [float] with the spiked-in concentration of each internal standard peptide into the sample in fmol/µg whole cell lysate (total protein extracted).
 An example file for the peptide-based internal standard concentration table can be found in ``Examples\Input\ISconc_proteins_example.csv``.
@@ -173,8 +172,8 @@ Output data
 The output directory will be located in the input directory after the run and will contain seven files with a protein concentration table, one for each algorithm.
 The protein concentration table has the following headers: ``ProteinName`` [string] with the UniProt identifier of the corresponding protein (identical to the identifiers in the fasta file with the proteome sequences),
 ``sample_conc(fmol/µg)_X`` [float] with the protein concentration in sample X in fmol/µg whole cell lysate (total protein extracted) for each sample,
-``invivo_conc(mM)_X`` [float] with the *in vivo* protein concentration in sample X in mM (millimol/liter) for each sample.
-An example file for the peptide-based internal standard concentration table can be found in ``Examples\Output\Example_prot_conc_alg.csv``.
+``invivo_conc(mM)_X`` [float] with the intracellular protein concentration in sample X in mM (millimol/liter) for each sample.
+An example file for the peptide-based internal standard concentration table can be found in ``Examples\Output\Example_prot_conc.csv``.
 
 =========== ====================== ================= ===
 ProteinName sample_conc(fmol/µg)_X invivo_conc(mM)_X ...

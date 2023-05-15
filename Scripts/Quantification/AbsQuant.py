@@ -87,13 +87,9 @@ def get_invivo_prot_conc_label(exp,m,workpath,sample_ids,stan_conc,plotpath,tota
         plt.title("%1.2f * log10(int) + %1.2f with $R^{2}$ of %1.2f" %(res.params[1],res.params[0],res.rsquared))
         plt.savefig(os.path.join(plotpath,"LR_"+m+"_"+id+".png"),bbox_inches="tight")
 
-        # calculate in vivo proteins concentrations
-        TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
-        if "Volume" in total_protein.columns:
-            Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
-        else:
-            Vc = 3.9e-15 # L/cell
-        prot_labconc["invivo_conc(mM)_"+id] = prot_labconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
+        # calculate intracellular proteins concentrations
+        CPD = total_protein.loc[(total_protein["Sample"] == id), "CPD"].values[0]
+        prot_labconc["invivo_conc(mM)_"+id] = prot_labconc["sample_conc(fmol/µg)_"+id]*CPD*1e-6
 
     return prot_labconc
 
@@ -154,13 +150,9 @@ def get_invivo_prot_conc_unlabel(exp,m,workpath,sample_ids,stan_conc,plotpath,to
         plt.title("%1.2f * log10(int) + %1.2f with $R^{2}$ of %1.2f" %(res.params[1],res.params[0],res.rsquared))
         plt.savefig(os.path.join(plotpath,"LR_"+m+"_"+id+".png"),bbox_inches="tight")
 
-        # calculate in vivo proteins concentrations
-        TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
-        if "Volume" in total_protein.columns:
-            Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
-        else:
-            Vc = 3.9e-15 # L/cell
-        prot_unlabconc["invivo_conc(mM)_"+id] = prot_unlabconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
+        # calculate intracellular proteins concentrations
+        CPD = total_protein.loc[(total_protein["Sample"] == id), "CPD"].values[0]
+        prot_unlabconc["invivo_conc(mM)_"+id] = prot_unlabconc["sample_conc(fmol/µg)_"+id]*CPD*1e-6
 
     return prot_unlabconc
 
@@ -210,13 +202,9 @@ def get_invivo_prot_conc_free(exp,m,workpath,sample_ids,prot_seq,total_protein,c
             p_int = sample.loc[sample["ProteinName"] == prot, id].values[0]
             prot_freeconc.loc[prot_freeconc["ProteinName"] == prot, "sample_conc(fmol/µg)_"+id] = p_int*(1e9/tot_mass)
 
-    # calculate in vivo proteins concentrations
-        TPA = total_protein.loc[(total_protein["Sample"] == id), "TPA"].values[0]
-        if "Volume" in total_protein.columns:
-            Vc = total_protein.loc[(total_protein["Sample"] == id), "Volume"].values[0]
-        else:
-            Vc = 3.9e-15 # L/cell
-        prot_freeconc["invivo_conc(mM)_"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*TPA*(1e-12/Vc)
+        # calculate intracellular proteins concentrations
+        CPD = total_protein.loc[(total_protein["Sample"] == id), "CPD"].values[0]
+        prot_freeconc["invivo_conc(mM)_"+id] = prot_freeconc["sample_conc(fmol/µg)_"+id]*CPD*1e-6
 
     return prot_freeconc
 
@@ -227,7 +215,7 @@ def main():
     parser.add_argument("--inDir", dest="input_directory", required=True, type=str, help="Full path of input directory")
     parser.add_argument("--sam", dest="samples", nargs="+", required=True, help="String of spaced-out samples names as in the input files, e.g. '1 2 3'")
     parser.add_argument("--met", dest="methods", nargs="+", required=True, help="String of spaced-out methods with the following options: 'top', 'all', 'iBAQ', 'APEX', 'NSAF', 'LFAQ', 'xTop'")
-    parser.add_argument("--tot", dest="total_protein", type=str, required=True, help="Input file with total protein per sample")
+    parser.add_argument("--tot", dest="total_protein", type=str, required=True, help="Input file with total protein (cellular protein density) per sample")
     parser.add_argument("--Sint", dest="standard_intensities", type=str, default=argparse.SUPPRESS, help="Input file with standard intensities")
     parser.add_argument("--Sconc", dest="IS_concentrations", type=str, default=argparse.SUPPRESS, help="Input file with IS concentrations")
     parser.add_argument("--fasta", dest="protein_sequences", type=str, default=argparse.SUPPRESS, help="Input file with protein sequences in FASTA format")
@@ -239,7 +227,7 @@ def main():
     resultspath = os.path.join(workpath,"Absolute_quantification")
     if not os.path.exists(resultspath):
         os.makedirs(resultspath)
-    total_protein = pd.read_csv(args.total_protein, sep=",", header=0) # µg/cell
+    total_protein = pd.read_csv(args.total_protein, sep=",", header=0) # g/L
     # determine sample names and methods
     sample_ids = args.samples
     methods = args.methods
