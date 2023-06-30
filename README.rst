@@ -18,11 +18,11 @@ autoprot
 |
 
 The *autoprot* pipeline allows for absolute quantification of proteins from raw mass spectrometry (MS) files in an automated manner.
-The pipeline covers data analysis from both DIA and DDA methods, where a fully open-source option is avalaible for DIA methods.
+The pipeline covers data analysis from both DIA and DDA methods, where a fully open-source option is available for DIA methods.
 Raw data from labelled, label-free and standard-free approaches can be analysed with the pipeline.
 The normalisation of peptide intensities into protein intensities is performed with seven different algorithms to identify the optimal algorithm for the current experiment.
 The incorporated algorithms are Top3 (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
-Topall (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
+Top all (`Silva et al., 2006 <https://www.sciencedirect.com/science/article/pii/S1535947620315127>`_),
 iBAQ (`Schwanhausser et al., 2011 <https://www.nature.com/articles/nature10098>`_),
 APEX (`Lu et al., 2007 <https://www.nature.com/articles/nbt1270>`_),
 NSAF (`Zybailov et al., 2006 <https://pubs.acs.org/doi/full/10.1021/pr060161n>`_),
@@ -39,7 +39,7 @@ The required files can be downloaded from this GitHub repository with the follow
     git clone git@github.com:biosustain/autoprot.git
 
 Due to the many available options, the *autoprot* pipeline depends on a number of different software and packages.
-A list of all dependecies and their corresponding, tested version is provided below.
+A list of all dependencies and their corresponding, tested version is provided below.
 The ``autoprot.ps1`` script and multiple other scripts or executables have to be added to the PATH variable for the *autoprot* pipeline to work properly.
 While file paths can be added to the PATH variable through the `command line <https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-7.2>`_,
 on Windows one can also add to the PATH variable through the `graphical user interface <https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0>`_ (GUI).
