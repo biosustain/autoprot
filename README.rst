@@ -98,7 +98,7 @@ The available arguments are:
 -InputDir    [directory] **mandatory** specify the input directory containing all input files with raw MS spectra. The output directory will be located in the input directory after the run.
 -ExpName     [string] **mandatory** specify the name of the experiment.
 -fasta       [file] **mandatory** specify the FASTA file with the proteome sequences.
--totalProt   [file] **mandatory** specify the file with total protein amount for each sample. Optional to include the cell volume to be used for each sample.
+-totalProt   [file] **mandatory** specify the file with the cellular protein density values for each sample.
 -SpecLib     [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.
 -BGSfasta    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (commercial).
 -ISconc      [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
