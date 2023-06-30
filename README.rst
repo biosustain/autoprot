@@ -44,7 +44,7 @@ The ``autoprot.ps1`` script and multiple other scripts or executables have to be
 While file paths can be added to the PATH variable through the `command line <https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-7.2>`_,
 on Windows one can also add to the PATH variable through the `graphical user interface <https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0>`_ (GUI).
 
-To test if the *autoprot* pipeline is set up properly, the files in ``Examples\Input`` can be used in combination with `raw MS files <https://www.ebi.ac.uk/pride/archive/projects/PXD043377>` of the standard-free DIA analysis (place the 9 .raw files in the ``Examples\Input`` folder first) for a test run with the following command:
+To test if the *autoprot* pipeline is set up properly, the files in ``Examples\Input`` can be used in combination with `raw MS files <https://www.ebi.ac.uk/pride/archive/projects/PXD043377>`_ of the standard-free DIA analysis (place the 9 .raw files in the ``Examples\Input`` folder first) for a test run with the following command:
 
 ::
     
