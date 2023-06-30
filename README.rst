@@ -17,7 +17,7 @@ autoprot
 
 |
 
-The autoprot pipeline allows for absolute quantification of proteins from raw mass spectrometry (MS) files in an automated manner.
+The *autoprot* pipeline allows for absolute quantification of proteins from raw mass spectrometry (MS) files in an automated manner.
 The pipeline covers data analysis from both DIA and DDA methods, where a fully open-source option is avalaible for DIA methods.
 Raw data from labelled, label-free and standard-free approaches can be analysed with the pipeline.
 The normalisation of peptide intensities into protein intensities is performed with seven different algorithms to identify the optimal algorithm for the current experiment.
@@ -38,19 +38,19 @@ The required files can be downloaded from this GitHub repository with the follow
 
     git clone git@github.com:biosustain/autoprot.git
 
-Due to the many available options, the autoprot pipeline depends on a number of different software and packages.
+Due to the many available options, the *autoprot* pipeline depends on a number of different software and packages.
 A list of all dependecies and their corresponding, tested version is provided below.
-The ``autoprot.ps1`` script and multiple other scripts or executables have to be added to the PATH variable for the autoprot pipeline to work properly.
+The ``autoprot.ps1`` script and multiple other scripts or executables have to be added to the PATH variable for the *autoprot* pipeline to work properly.
 While file paths can be added to the PATH variable through the `command line <https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-7.2>`_,
 on Windows one can also add to the PATH variable through the `graphical user interface <https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0>`_ (GUI).
 
-To test if the autoprot pipeline is set up properly, the files in ``Examples\Input`` can be used in combination with raw MS files (LINK) for a test run with the following command:
+To test if the *autoprot* pipeline is set up properly, the files in ``Examples\Input`` can be used in combination with `raw MS files <https://www.ebi.ac.uk/pride/archive/projects/PXD043377>` of the standard-free DIA analysis (place the 9 .raw files in the ``Examples\Input`` folder first) for a test run with the following command:
 
 ::
     
-    autoprot.ps1 -mode "directDIA" -approach "free" -InputDir "$PSScriptRoot\..\Examples\Input" -ExpName "test_run" -fasta "$PSScriptRoot\..\Examples\Input\" -totalProt "$PSScriptRoot\..\Examples\Input\" -BGSfasta "$PSScriptRoot\..\Examples\Input\"
+    autoprot.ps1 -osDIA -mode "directDIA" -approach "free" -InputDir "$PSScriptRoot\..\Examples\Input" -ExpName "test_run" -fasta "$PSScriptRoot\..\Examples\Input\" -totalProt "$PSScriptRoot\..\Examples\Input\"
 
-The output files should be verified with the files in ``Examples\Output``.
+The output files can be verified with the files in ``Examples\Output``.
 
 Dependencies
 ^^^^^^^^^^^^
@@ -78,7 +78,7 @@ The ``autoprot.ps1`` script can be executed in PowerShell 7 (when added to the P
 
     autoprot.ps1 [args]
 
-To access the autoprot help from the command line in PowerShell 7:
+To access the *autoprot* help from the command line in PowerShell 7:
 
 ::
 
@@ -106,7 +106,7 @@ The available arguments are:
 Specific input data
 ===================
 
-Ensure that the FASTA file with the proteome sequences follows the official UniProt configuration for the headers. An example FASTA file can be found in ``Examples\Input\URF_2021_04_UP000000625_E_coli_83333.fasta``.
+Ensure that the FASTA file with the proteome sequences follows the official UniProt configuration for the headers. An example FASTA file can be found in ``Examples\Input\URF_UP000000625_E_coli.fasta``.
 
 All workflows in ``DIA`` and ``directDIA`` mode can be initialised from .RAW files (Thermo Fisher Scientific instrument specific - please open an issue if another type is required in combination with Spectronaut)
 using either `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
@@ -121,13 +121,13 @@ For a workflow in ``directDIA`` mode using `Spectronaut <https://biognosys.com/s
 a BGSfasta version of the fasta file is required. This BGSfasta version can be obtained by loading the fasta file with the proteome sequences in `Spectronaut <https://biognosys.com/software/spectronaut/>`_ (commercial; Biognosys AG, Schlieren, Switzerland)
 as a protein database. Then, the BGSfasta version of the fasta file should be in the folder ``$HOME\Databases\Spectronaut\``.
 
-The autoprot pipeline has two custom input files which are described below.
+The *autoprot* pipeline has two custom input files which are described below.
 
 Cellular protein density
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The table with cellular protein density for each sample should have the following headers: ``Sample`` [string] with the name of each sample which should be the same as the names of the .RAW files and
-``CPD`` [float] with the cellular protein density of each sample in g/L. An example file for the total protein and cell volume table can be found in ``Examples\Input\CPD_example.csv``.
+``CPD`` [float] with the cellular protein density of each sample in g/L. An example file for the cellular protein density table can be found in ``Examples\Input\CPD_example.csv``.
 
 ======= =======
 Sample  CPD    
@@ -173,7 +173,7 @@ The output directory will be located in the input directory after the run and wi
 The protein concentration table has the following headers: ``ProteinName`` [string] with the UniProt identifier of the corresponding protein (identical to the identifiers in the fasta file with the proteome sequences),
 ``sample_conc(fmol/µg)_X`` [float] with the protein concentration in sample X in fmol/µg whole cell lysate (total protein extracted) for each sample,
 ``invivo_conc(mM)_X`` [float] with the intracellular protein concentration in sample X in mM (millimol/liter) for each sample.
-An example file for the peptide-based internal standard concentration table can be found in ``Examples\Output\Example_prot_conc.csv``.
+Example files for the protein-based results table can be found in the ``Examples\Output`` folder.
 
 =========== ====================== ================= ===
 ProteinName sample_conc(fmol/µg)_X invivo_conc(mM)_X ...
@@ -186,7 +186,7 @@ UniProt ID2 <float>                <float>           ...
 Intermediate files
 ^^^^^^^^^^^^^^^^^^
 
-All intermediate output files of the autoprot pipeline will be located in ``intermediate_results`` in the output directory.
+All intermediate output files of the *autoprot* pipeline will be located in ``intermediate_results`` in the output directory.
 Of particular interest, the linear regression plots of the proteome absolute quantification for the ``labelled`` or ``unlabel`` approach will be located in ``intermediate_results\Absolute_quantification\LR_plots``.
 
 Analysis settings
