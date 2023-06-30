@@ -48,7 +48,7 @@ To test if the *autoprot* pipeline is set up properly, the files in ``Examples\I
 
 ::
     
-    autoprot.ps1 -osDIA -mode "directDIA" -approach "free" -InputDir "$PSScriptRoot\..\Examples\Input" -ExpName "test_run" -fasta "$PSScriptRoot\..\Examples\Input\" -totalProt "$PSScriptRoot\..\Examples\Input\"
+    autoprot.ps1 -osDIA -mode "directDIA" -approach "free" -InputDir "$PSScriptRoot\..\Examples\Input" -ExpName "test_run" -fasta "$PSScriptRoot\..\Examples\Input\URF_UP000000625_E_coli.fasta" -totalProt "$PSScriptRoot\..\Examples\Input\CPD_example.csv"
 
 The output files can be verified with the files in ``Examples\Output``.
 
