@@ -11,6 +11,9 @@
     is performed with seven different algorithms to identify the optimal algorithm for the current experiment. 
     The incorporated algorithms are Top3, Topall, iBAQ, APEX, NSAF, LFAQ, and xTop.
 
+    .PARAMETER osDIA
+    [flag] enables the open-source option for DIA analysis, which uses DIA-NN instead of Spectronaut.
+
     .PARAMETER mode
     [string] mandatory specify the acquisition mode as "DDA", "DIA" or "directDIA".
 
@@ -30,6 +33,9 @@
     .PARAMETER totalProt
     [file] mandatory specify the file with total protein amount for each sample. 
     Optional to include the cell volume to be used for each sample
+
+    .PARAMETER DDAresultsFile
+    [file] (mandatory for "DDA" mode) specify the file with the Proteome Discoverer Peptide Groups results.
 
     .PARAMETER SpecLib
     [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.

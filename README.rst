@@ -92,16 +92,17 @@ When the ``autoprot.ps1`` script is located on a drive with restricted access, e
 
 The available arguments are:
 
--osDIA       [flag] enables the open-source option for DIA analysis, which uses DIA-NN instead of Spectronaut.
--mode        [string] **mandatory** specify the acquisition mode as "DDA", "DIA" or "directDIA".
--approach    [string] **mandatory** specify the quantification approach as "label", "unlabel" or "free".
--InputDir    [directory] **mandatory** specify the input directory containing all input files with raw MS spectra. The output directory will be located in the input directory after the run.
--ExpName     [string] **mandatory** specify the name of the experiment.
--fasta       [file] **mandatory** specify the FASTA file with the proteome sequences.
--totalProt   [file] **mandatory** specify the file with the cellular protein density values for each sample.
--SpecLib     [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.
--BGSfasta    [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (commercial).
--ISconc      [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
+-osDIA           [flag] enables the open-source option for DIA analysis, which uses DIA-NN instead of Spectronaut.
+-mode            [string] **mandatory** specify the acquisition mode as "DDA", "DIA" or "directDIA".
+-approach        [string] **mandatory** specify the quantification approach as "label", "unlabel" or "free".
+-InputDir        [directory] **mandatory** specify the input directory containing all input files with raw MS spectra. The output directory will be located in the input directory after the run.
+-ExpName         [string] **mandatory** specify the name of the experiment.
+-fasta           [file] **mandatory** specify the FASTA file with the proteome sequences.
+-totalProt       [file] **mandatory** specify the file with the cellular protein density values for each sample.
+-DDAresultsFile  [file] (mandatory for "DDA" mode) specify the file with the Proteome Discoverer Peptide Groups results.
+-SpecLib         [file] (mandatory for "DIA" mode) specify the file with the spectral library for the "DIA" mode.
+-BGSfasta        [file] (mandatory for "directDIA" mode with Spectronaut) specify the FASTA file in .BGSfasta format, which is required for the "directDIA" mode using Spectronaut (commercial).
+-ISconc          [file] (mandatory for "label" and "unlabel" approaches) specify the file with the absolute concentrations of each standard peptide ("label" approach) or protein ("unlabel" approach).
 
 Specific input data
 ===================
